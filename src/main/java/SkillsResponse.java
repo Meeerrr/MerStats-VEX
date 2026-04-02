@@ -6,5 +6,8 @@ public class SkillsResponse {
     public ArrayList<SkillsResponse> getData() {
         return data;
     }
+    public void getSkillsByTeamId(int teamId){
+
+    }
 
 }
