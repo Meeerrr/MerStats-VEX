@@ -8,6 +8,9 @@ public class VexTeam {
     private String number;
     private String team_name;
 
+    public VexTeam() {
+    }
+
     //getters, setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

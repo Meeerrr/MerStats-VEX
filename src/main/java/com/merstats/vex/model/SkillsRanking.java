@@ -1,5 +1,8 @@
 package com.merstats.vex.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SkillsRanking {
     private String type;
     private int rank;
@@ -7,12 +10,9 @@ public class SkillsRanking {
     private VexEventInfo event;
     private VexSeasonInfo season;
 
-    public SkillsRanking(String type, int rank, int score, VexEventInfo event, VexSeasonInfo season) {
-        this.type = type;
-        this.rank = rank;
-        this.score = score;
-        this.event = event;
-        this.season = season;
+    //empty constructor for JSON converting
+    public SkillsRanking() {
+
     }
 
     public String getType() {

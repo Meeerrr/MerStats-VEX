@@ -7,12 +7,11 @@ public class VexEventInfo {
 
     private int id;
     private String name;
-    private int code;
+    private String code;
 
-    public VexEventInfo(int id, String name, int code) {
-        this.id = id;
-        this.name = name;
-        this.code = code;
+    //empty constructor for JSON converting
+    public VexEventInfo() {
+
     }
 
     public int getId() {
@@ -23,7 +22,7 @@ public class VexEventInfo {
         return name;
     }
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
 }

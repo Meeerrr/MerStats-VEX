@@ -1,15 +1,19 @@
 package com.merstats.vex.model;
 
-import java.util.ArrayList;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SkillsResponse {
-     private ArrayList<SkillsResponse> data;
+     private List<SkillsRanking> data;
 
-    public ArrayList<SkillsResponse> getData() {
+     //empty constructor for JSON converting
+     public SkillsResponse() {
+
+    }
+
+    public List<SkillsRanking> getData() {
         return data;
     }
-    public void getSkillsByTeamId(int teamId){
-
-    }
-
 }
