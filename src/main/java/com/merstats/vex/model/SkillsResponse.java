@@ -1,3 +1,5 @@
+package com.merstats.vex.model;
+
 import java.util.ArrayList;
 
 public class SkillsResponse {

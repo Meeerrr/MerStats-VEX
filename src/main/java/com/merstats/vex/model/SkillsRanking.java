@@ -1,3 +1,5 @@
+package com.merstats.vex.model;
+
 public class SkillsRanking {
     private String type;
     private int rank;

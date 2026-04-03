@@ -1,13 +1,14 @@
+package com.merstats.vex.model;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class VexEventInfo {
-
+public class VexSeasonInfo {
     private int id;
     private String name;
-    private int code;
+    private String code;
 
-    public VexEventInfo(int id, String name, int code) {
+    public VexSeasonInfo(int id, String name, String code) {
         this.id = id;
         this.name = name;
         this.code = code;
@@ -21,7 +22,7 @@ public class VexEventInfo {
         return name;
     }
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
 }
