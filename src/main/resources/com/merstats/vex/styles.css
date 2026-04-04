@@ -1,0 +1,182 @@
+/* ========================================== */
+/* BASE THEME & VARIABLES                     */
+/* ========================================== */
+.main-container {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+* {
+    /* Modern Color Palette */
+    -accent-indigo: #6366f1;       /* Vibrant primary accent */
+    -accent-indigo-hover: #4f46e5;
+    -sidebar-bg: #0f172a;          /* Very dark slate */
+    -sidebar-text: #94a3b8;        /* Muted slate text */
+    -bg-light: #f1f5f9;            /* Cool-toned light gray background */
+    -text-dark: #1e293b;           /* Deep slate for main text */
+    -text-muted: #64748b;          /* Lighter text for subtitles */
+}
+
+/* ========================================== */
+/* DARK SIDEBAR & TYPOGRAPHY                  */
+/* ========================================== */
+.sidebar {
+    -fx-background-color: -sidebar-bg;
+}
+
+/* Two-Tone Logo */
+.logo-text-primary {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-letter-spacing: -0.5px;
+}
+.logo-text-accent {
+    -fx-text-fill: -accent-indigo;
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-letter-spacing: -0.5px;
+}
+
+/* Navigation Links */
+.nav-link {
+    -fx-text-fill: -sidebar-text;
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+    -fx-padding: 8 12;
+    -fx-background-radius: 6;
+    transition: -fx-background-color 0.2s, -fx-text-fill 0.2s;
+}
+.nav-link:hover {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link-active {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-padding: 8 12;
+    -fx-background-color: rgba(99, 102, 241, 0.15); /* Soft indigo background */
+    -fx-border-color: transparent transparent transparent -accent-indigo;
+    -fx-border-width: 0 0 0 3;
+    -fx-background-radius: 0 6 6 0;
+}
+
+/* MerStats Branding */
+.merstats-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+}
+.merstats-subtitle {
+    -fx-text-fill: -sidebar-text;
+    -fx-font-size: 12px;
+}
+
+/* ========================================== */
+/* CENTER CONTENT & SOFT UI SHADOWS           */
+/* ========================================== */
+.center-background {
+    -fx-background-color: -bg-light;
+}
+
+.content-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20; /* Rounder, modern corners */
+
+    /* Modern Soft UI Shadow: Large blur (40), low opacity (0.06), slightly offset Y (10) */
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.06), 40, 0, 0, 10);
+}
+
+.illustration-placeholder {
+    -fx-text-fill: rgba(99, 102, 241, 0.2); /* Very faint indigo */
+    -fx-font-size: 80px;
+}
+
+.hero-header {
+    -fx-text-fill: -text-dark;
+    -fx-font-size: 38px;
+    -fx-font-weight: 800;
+    -fx-letter-spacing: -1px;
+}
+
+.hero-subtitle {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 16px;
+    -fx-text-alignment: CENTER;
+    -fx-max-width: 480px;
+}
+
+.section-label {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-letter-spacing: 1px; /* Uppercase tracked out look */
+}
+
+/* ========================================== */
+/* PREMIUM SEARCH BAR (COMMAND PALETTE STYLE) */
+/* ========================================== */
+.center-search-wrapper {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 4; /* Creates a gap between the input and the inner button */
+    transition: -fx-border-color 0.2s, -fx-effect 0.2s;
+}
+
+/* Glowing Focus State for the Wrapper */
+.center-search-wrapper:focus-within {
+    -fx-border-color: -accent-indigo;
+    -fx-effect: dropshadow(three-pass-box, rgba(99, 102, 241, 0.25), 15, 0, 0, 0);
+}
+
+.center-search-input {
+    -fx-background-color: transparent; /* Wrapper handles the background */
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-text-fill: -text-dark;
+    -fx-font-size: 16px;
+    -fx-padding: 10 20;
+    -fx-background-insets: 0;
+}
+.center-search-input:focused {
+    -fx-background-color: transparent;
+}
+
+.center-search-button {
+    -fx-background-color: -accent-indigo;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 24;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    transition: -fx-background-color 0.2s;
+}
+.center-search-button:hover {
+    -fx-background-color: -accent-indigo-hover;
+}
+
+/* ========================================== */
+/* CHIP BUTTONS (RECENT QUERIES)              */
+/* ========================================== */
+.chip-button {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-text-fill: -text-dark;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-padding: 6 16;
+    -fx-cursor: hand;
+    transition: -fx-background-color 0.2s, -fx-border-color 0.2s;
+}
+.chip-button:hover {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -accent-indigo;
+    -fx-text-fill: -accent-indigo;
+}
