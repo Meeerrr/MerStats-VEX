@@ -319,3 +319,41 @@
     -fx-border-width: 2px;
     -fx-border-style: dashed; /* Dashed border implies an empty drop-zone */
 }
+
+/* ========================================== */
+/* CONDITIONAL FORMATTING (GLOBAL RANK)       */
+/* ========================================== */
+
+/* For World Champions / Rank 1 */
+.rank-gold {
+    -fx-text-fill: #eab308; /* Vibrant Gold */
+    -fx-font-weight: 900;
+    -fx-font-size: 15px;
+}
+
+/* For Top 50 in the World */
+.rank-green {
+    -fx-text-fill: #22c55e; /* Bright Success Green */
+    -fx-font-weight: 800;
+}
+
+/* For Standard Ranks */
+.rank-standard {
+    -fx-text-fill: -text-muted;
+    -fx-font-weight: 600;
+}
+
+/* ========================================== */
+/* INTERACTIVE LOGO ANIMATION (GLOW)          */
+/* ========================================== */
+
+/* Default state: No glow, clean look */
+#mainLogo {
+    -fx-effect: null;
+}
+
+/* Active state: Applied dynamically in Java during the search */
+.logo-active-pulse #mainLogo {
+    /* Casts a beautiful indigo glow behind the transparent PNG */
+    -fx-effect: dropshadow(three-pass-box, -accent-indigo, 25, 0.5, 0, 0);
+}

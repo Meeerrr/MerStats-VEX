@@ -9,12 +9,15 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
 <BorderPane prefHeight="760.0" prefWidth="1150.0" styleClass="main-container" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.merstats.vex.ui.MainController">
     <left>
-        <VBox prefWidth="260.0" spacing="15.0" styleClass="sidebar">
+        <VBox fx:id="sidebar" prefWidth="260.0" spacing="15.0" styleClass="sidebar">
             <padding>
                 <Insets bottom="30.0" left="30.0" right="20.0" top="40.0" />
             </padding>
@@ -45,37 +48,44 @@
                 <Insets bottom="50.0" left="60.0" right="60.0" top="50.0" />
             </padding>
 
-            <VBox alignment="CENTER" spacing="25.0" styleClass="content-card">
+            <VBox fx:id="contentCard" alignment="CENTER" spacing="25.0" styleClass="content-card">
                 <padding>
                     <Insets bottom="60.0" left="60.0" right="60.0" top="60.0" />
                 </padding>
 
-                <Label text="✦" styleClass="illustration-placeholder" />
+                <ImageView fx:id="mainLogo" fitHeight="120.0" fitWidth="120.0" preserveRatio="true">
+                    <image>
+                        <Image url="@logo.png" />
+                    </image>
+                    <VBox.margin>
+                        <Insets bottom="10.0"/>
+                    </VBox.margin>
+                </ImageView>
 
                 <VBox alignment="CENTER" spacing="5.0">
                     <Label fx:id="dashboardTitle" text="Ready to Query" styleClass="hero-header" />
                     <Label fx:id="dashboardSubtitle" text="Enter a unique Team ID to retrieve real-time telemetry and advanced analytics." styleClass="hero-subtitle" wrapText="true" />
-                </VBox>
+                </VBox> <HBox alignment="CENTER" styleClass="center-search-wrapper" maxWidth="550.0">
+                <VBox.margin>
+                    <Insets top="20.0" bottom="10.0"/>
+                </VBox.margin>
 
+                <TextField fx:id="teamInput" HBox.hgrow="ALWAYS" prefWidth="450.0" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
+                <Button fx:id="searchButton" minWidth="110.0" prefWidth="110.0" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
+            </HBox>
 
-                <HBox alignment="CENTER" styleClass="center-search-wrapper" maxWidth="550.0">
+                <ProgressBar fx:id="loadingBar" prefWidth="550.0" progress="-1.0" visible="false" styleClass="loading-bar">
                     <VBox.margin>
-                        <Insets top="20.0" bottom="10.0"/>
+                        <Insets top="5.0" bottom="-10.0"/>
                     </VBox.margin>
-
-                    <TextField fx:id="teamInput" HBox.hgrow="ALWAYS" prefWidth="450.0" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
-                    <Button fx:id="searchButton" minWidth="110.0" prefWidth="110.0" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
-                </HBox>
+                </ProgressBar>
 
                 <TableView fx:id="skillsTable" prefHeight="300.0" prefWidth="800.0">
                     <columns>
                         <TableColumn fx:id="seasonCol" prefWidth="150.0" text="Season" />
                         <TableColumn fx:id="eventCol" prefWidth="250.0" text="Event Name" />
-
                         <TableColumn fx:id="typeCol" prefWidth="100.0" text="Run Type" />
-
                         <TableColumn fx:id="attemptCol" prefWidth="100.0" text="Attempt #" />
-
                         <TableColumn fx:id="scoreCol" prefWidth="100.0" text="Score" />
                         <TableColumn fx:id="rankCol" prefWidth="100.0" text="Global Rank" />
                     </columns>
@@ -84,9 +94,7 @@
                     </VBox.margin>
                 </TableView>
 
-
             </VBox>
         </StackPane>
     </center>
-
 </BorderPane>
