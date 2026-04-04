@@ -11,6 +11,12 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import java.util.LinkedList;
+import java.util.List;
+import javafx.geometry.Side;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -19,6 +25,12 @@ public class MainController {
     // --- 1. Link the UI Elements ---
     @FXML private TextField teamInput;
     @FXML private Button searchButton;
+
+    // The floating dropdown menu
+    private ContextMenu searchHistoryPopup;
+
+    // The list that remembers your past searches (limited to 5)
+    private final List<String> recentSearches = new LinkedList<>();
 
 
     @FXML private TableView<SkillsRanking> skillsTable;
@@ -36,10 +48,17 @@ public class MainController {
     public void initialize() {
         seasonCol.setCellValueFactory(new PropertyValueFactory<>("seasonName"));
         eventCol.setCellValueFactory(new PropertyValueFactory<>("eventName"));
-        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("formattedType"));
         attemptCol.setCellValueFactory(new PropertyValueFactory<>("attempts"));
         scoreCol.setCellValueFactory(new PropertyValueFactory<>("score"));
         rankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
+
+
+
+        // Forces the columns to stretch and perfectly fill the width of the table
+        skillsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        setupSearchHistoryPopup();
 
         searchButton.setOnAction(event -> handleSearch());
     }
@@ -50,6 +69,15 @@ public class MainController {
 
         // Prevent searching if the user accidentally clicks the button while the box is empty
         if (teamNumber.isEmpty()) return;
+
+        // --- NEW: THE MEMORY SYSTEM ---
+        // If this is a new search, add it to our recent searches list
+        if (!recentSearches.contains(teamNumber)) {
+            recentSearches.add(0, teamNumber); // Push it to the very top of the list
+            if (recentSearches.size() > 5) {
+                recentSearches.remove(5); // Keep the list clean (only remember the last 5)
+            }
+        }
 
         // --- 1. Visual Feedback (UI Thread) ---
         // Disable the button and change the text so the user knows the app is working
@@ -91,7 +119,7 @@ public class MainController {
                     // This groups all runs by Season first, then groups them by Event Name,
                     // and finally sorts by highest score at that specific event!
                     skillsData.sort((rank1, rank2) -> {
-                        // Compares the numeric IDs so the highest ID (newest season) is always on top
+                        // Priority 1: Compare Seasons (Descending so newest seasons are at the top)
                         int seasonCompare = Integer.compare(rank2.getSeasonId(), rank1.getSeasonId());
                         if (seasonCompare != 0) return seasonCompare;
 
@@ -107,10 +135,43 @@ public class MainController {
                     skillsTable.getItems().setAll(skillsData);
 
                 } else {
-                    // If no data comes back, log it (we can add a visual alert for this later)
+                    // If no data comes back, log it
                     System.out.println("No skills records found for team: " + teamNumber);
                 }
             });
         });
+    }
+    private void setupSearchHistoryPopup() {
+        searchHistoryPopup = new ContextMenu();
+        searchHistoryPopup.getStyleClass().add("history-popup"); // For our CSS later
+
+        // Trigger 1: When the user physically clicks inside the text box
+        teamInput.setOnMouseClicked(event -> showRecentSearches());
+
+        // Trigger 2: Hide the popup the moment they start typing something new
+        teamInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            searchHistoryPopup.hide();
+        });
+    }
+
+    private void showRecentSearches() {
+        // If there is no history yet, don't show an empty floating box
+        if (recentSearches.isEmpty()) return;
+
+        searchHistoryPopup.getItems().clear();
+
+        // Build a clickable menu item for every saved search
+        for (String search : recentSearches) {
+            MenuItem item = new MenuItem("🕒  " + search); // Added a nice clock icon
+            item.setOnAction(event -> {
+                // When clicked, fill the text box and instantly trigger the search!
+                teamInput.setText(search);
+                handleSearch();
+            });
+            searchHistoryPopup.getItems().add(item);
+        }
+
+        // Show the popup perfectly aligned underneath the text field
+        searchHistoryPopup.show(teamInput, Side.BOTTOM, 0, 5);
     }
 }

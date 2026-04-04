@@ -2,7 +2,8 @@
 /* BASE THEME & VARIABLES                     */
 /* ========================================== */
 .main-container {
-    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    /* Safe, modern font stack that works natively on Windows/Mac */
+    -fx-font-family: "Segoe UI", -apple-system, "Helvetica Neue", sans-serif;
 }
 
 * {
@@ -28,13 +29,11 @@
     -fx-text-fill: #ffffff;
     -fx-font-size: 26px;
     -fx-font-weight: 800;
-    -fx-letter-spacing: -0.5px;
 }
 .logo-text-accent {
     -fx-text-fill: -accent-indigo;
     -fx-font-size: 26px;
     -fx-font-weight: 800;
-    -fx-letter-spacing: -0.5px;
 }
 
 /* Navigation Links */
@@ -83,14 +82,12 @@
 
 .content-card {
     -fx-background-color: #ffffff;
-    -fx-background-radius: 20; /* Rounder, modern corners */
-
-    /* Modern Soft UI Shadow: Large blur (40), low opacity (0.06), slightly offset Y (10) */
+    -fx-background-radius: 20;
     -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.06), 40, 0, 0, 10);
 }
 
 .illustration-placeholder {
-    -fx-text-fill: rgba(99, 102, 241, 0.2); /* Very faint indigo */
+    -fx-text-fill: rgba(99, 102, 241, 0.2);
     -fx-font-size: 80px;
 }
 
@@ -98,21 +95,18 @@
     -fx-text-fill: -text-dark;
     -fx-font-size: 38px;
     -fx-font-weight: 800;
-    -fx-letter-spacing: -1px;
 }
 
 .hero-subtitle {
     -fx-text-fill: -text-muted;
     -fx-font-size: 16px;
     -fx-text-alignment: CENTER;
-    -fx-max-width: 480px;
 }
 
 .section-label {
     -fx-text-fill: -text-muted;
     -fx-font-size: 12px;
     -fx-font-weight: 700;
-    -fx-letter-spacing: 1px; /* Uppercase tracked out look */
 }
 
 /* ========================================== */
@@ -124,18 +118,17 @@
     -fx-border-width: 2;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 4; /* Creates a gap between the input and the inner button */
+    -fx-padding: 4;
     transition: -fx-border-color 0.2s, -fx-effect 0.2s;
 }
 
-/* Glowing Focus State for the Wrapper */
 .center-search-wrapper:focus-within {
     -fx-border-color: -accent-indigo;
     -fx-effect: dropshadow(three-pass-box, rgba(99, 102, 241, 0.25), 15, 0, 0, 0);
 }
 
 .center-search-input {
-    -fx-background-color: transparent; /* Wrapper handles the background */
+    -fx-background-color: transparent;
     -fx-prompt-text-fill: #94a3b8;
     -fx-text-fill: -text-dark;
     -fx-font-size: 16px;
@@ -170,7 +163,7 @@
     -fx-background-radius: 20;
     -fx-text-fill: -text-dark;
     -fx-font-size: 13px;
-    -fx-font-weight: 500;
+    -fx-font-weight: 600;
     -fx-padding: 6 16;
     -fx-cursor: hand;
     transition: -fx-background-color 0.2s, -fx-border-color 0.2s;
@@ -178,5 +171,134 @@
 .chip-button:hover {
     -fx-background-color: #ffffff;
     -fx-border-color: -accent-indigo;
+    -fx-text-fill: -accent-indigo;
+}
+
+/* ========================================== */
+/* MODERN MINIMALIST TABLEVIEW                */
+/* ========================================== */
+
+/* Strip default borders */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-font-family: "Segoe UI", -apple-system, "Helvetica Neue", sans-serif;
+}
+
+/* The Header Container */
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #e2e8f0;
+}
+
+/* Individual Header Cells */
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 40px;
+}
+
+/* Header Text Styling */
+.table-view .column-header .label {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 10px;
+}
+
+/* Hide empty space filler */
+.table-view .filler {
+    -fx-background-color: transparent;
+}
+
+/* The Rows */
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #f8fafc;
+    -fx-cell-size: 45px;
+    transition: -fx-background-color 0.2s;
+}
+
+/* Row Hover */
+.table-row-cell:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.04);
+}
+
+/* Selected Row (No ugly blue) */
+.table-view:focused .table-row-cell:filled:selected,
+.table-view .table-row-cell:filled:selected {
+    -fx-background-color: rgba(99, 102, 241, 0.12);
+    -fx-table-cell-border-color: transparent;
+}
+
+/* Standard Cell Text */
+.table-cell {
+    -fx-text-fill: -text-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-border-color: transparent;
+    -fx-padding: 0 10px 0 10px;
+    -fx-alignment: center-left;
+}
+
+/* Polish: Emphasize Event Name (2nd Column) */
+.table-view .table-column:nth-child(2) .table-cell {
+    -fx-font-weight: 600;
+    -fx-text-fill: #0f172a;
+}
+
+/* Polish: Emphasize the Score (5th Column) */
+.table-view .table-column:nth-child(5) .table-cell {
+    -fx-font-weight: 800;
+    -fx-text-fill: -accent-indigo;
+    -fx-font-size: 15px;
+}
+
+/* Modern Scrollbars */
+.table-view .scroll-bar:vertical,
+.table-view .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+.table-view .scroll-bar:vertical .thumb,
+.table-view .scroll-bar:horizontal .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 10px;
+}
+
+/* ========================================== */
+/* SEARCH HISTORY DROPDOWN                    */
+/* ========================================== */
+.history-popup {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8;
+    -fx-padding: 4;
+    /* Soft shadow to make it float beautifully above the table */
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.1), 15, 0, 0, 5);
+}
+
+.history-popup .menu-item {
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 6;
+}
+
+.history-popup .menu-item .label {
+    -fx-text-fill: -text-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+
+/* Hover effect for the dropdown items */
+.history-popup .menu-item:focused,
+.history-popup .menu-item:hover {
+    -fx-background-color: #f1f5f9;
+}
+
+.history-popup .menu-item:focused .label,
+.history-popup .menu-item:hover .label {
     -fx-text-fill: -accent-indigo;
 }

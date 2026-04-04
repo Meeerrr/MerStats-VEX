@@ -57,12 +57,13 @@
                     <Label text="Enter a unique Team ID to retrieve real-time telemetry and advanced analytics." styleClass="hero-subtitle" wrapText="true" />
                 </VBox>
 
-                <HBox alignment="CENTER" styleClass="center-search-wrapper">
+                <HBox alignment="CENTER" styleClass="center-search-wrapper" maxWidth="550.0">
                     <VBox.margin>
                         <Insets top="20.0" bottom="10.0"/>
                     </VBox.margin>
-                    <TextField fx:id="teamInput" prefWidth="450.0" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
-                    <Button fx:id="searchButton" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
+
+                    <TextField fx:id="teamInput" HBox.hgrow="ALWAYS" prefWidth="450.0" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
+                    <Button fx:id="searchButton" minWidth="110.0" prefWidth="110.0" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
                 </HBox>
 
                 <TableView fx:id="skillsTable" prefHeight="300.0" prefWidth="800.0">
@@ -82,14 +83,6 @@
                     </VBox.margin>
                 </TableView>
 
-                <VBox alignment="CENTER" spacing="15.0">
-                    <Label text="RECENT QUERIES" styleClass="section-label" />
-                    <HBox alignment="CENTER" spacing="15.0">
-                        <Button mnemonicParsing="false" styleClass="chip-button" text="Team Alpha-7" />
-                        <Button mnemonicParsing="false" styleClass="chip-button" text="Node Beta-9" />
-                        <Button mnemonicParsing="false" styleClass="chip-button" text="Sys ID: 00482" />
-                    </HBox>
-                </VBox>
 
             </VBox>
         </StackPane>

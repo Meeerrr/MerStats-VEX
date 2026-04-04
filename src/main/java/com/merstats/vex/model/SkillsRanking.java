@@ -64,4 +64,12 @@ public class SkillsRanking {
         }
         return 0;
     }
+    // Grabs the raw type (e.g., "driver") and capitalizes the first letter
+    public String getFormattedType() {
+        if (this.type == null || this.type.isEmpty()) {
+            return "Unknown";
+        }
+        // Take the first letter, uppercase it, and attach the rest of the word
+        return this.type.substring(0, 1).toUpperCase() + this.type.substring(1).toLowerCase();
+    }
 }
