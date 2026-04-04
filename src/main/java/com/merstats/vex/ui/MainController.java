@@ -10,6 +10,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Label;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -25,6 +26,12 @@ public class MainController {
     // --- 1. Link the UI Elements ---
     @FXML private TextField teamInput;
     @FXML private Button searchButton;
+    @FXML private Label dashboardTitle;
+    @FXML private Label dashboardSubtitle;
+
+
+    // The dynamic message that shows when the table is empty
+    private Label tablePlaceholder;
 
     // The floating dropdown menu
     private ContextMenu searchHistoryPopup;
@@ -60,83 +67,89 @@ public class MainController {
 
         setupSearchHistoryPopup();
 
+
+        tablePlaceholder = new Label("Ready to query. Enter a Team ID above.");
+        tablePlaceholder.getStyleClass().add("placeholder-label");
+        skillsTable.setPlaceholder(tablePlaceholder);
+
         searchButton.setOnAction(event -> handleSearch());
     }
 
     private void handleSearch() {
-        // Grab the text from the UI and remove any accidental spaces
         String teamNumber = teamInput.getText().trim();
 
-        // Prevent searching if the user accidentally clicks the button while the box is empty
         if (teamNumber.isEmpty()) return;
 
-        // --- NEW: THE MEMORY SYSTEM ---
-        // If this is a new search, add it to our recent searches list
+        // --- THE MEMORY SYSTEM ---
         if (!recentSearches.contains(teamNumber)) {
-            recentSearches.add(0, teamNumber); // Push it to the very top of the list
+            recentSearches.add(0, teamNumber);
             if (recentSearches.size() > 5) {
-                recentSearches.remove(5); // Keep the list clean (only remember the last 5)
+                recentSearches.remove(5);
             }
         }
 
         // --- 1. Visual Feedback (UI Thread) ---
-        // Disable the button and change the text so the user knows the app is working
         searchButton.setDisable(true);
         searchButton.setText("Searching...");
-        skillsTable.getItems().clear(); // Clear any old data from a previous search
+        skillsTable.getItems().clear(); // Clear the table...
 
-        // --- 2. The Background Thread (Prevents UI Freezing) ---
+        // ...and immediately tell the user what is happening in the empty space
+        tablePlaceholder.setText("Fetching telemetry for " + teamNumber + "...");
+
+        // --- 2. The Background Thread ---
         CompletableFuture.supplyAsync(() -> {
             try {
-                // Call 1: Get the Team to find their internal RobotEvents ID
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
 
                 if (team != null) {
-                    // Call 2: Use the ID to fetch their entire skills history
+                    Platform.runLater(() -> {
+                        dashboardTitle.setText("Team " + team.getNumber() + " - " + team.getTeam_name());
+                        dashboardSubtitle.setText("Grade Level: " + team.getGrade());
+                    });
                     return apiService.getSkillsByTeamId(team.getId());
+
+                } else {
+                    Platform.runLater(() -> {
+                        dashboardTitle.setText("Team Not Found");
+                        dashboardSubtitle.setText("Please verify the ID and try again.");
+                        // NEW: Update the table placeholder to explain the failure
+                        tablePlaceholder.setText("Error: Team '" + teamNumber + "' does not exist in the database.");
+                    });
+                    return null;
                 }
-                return null; // Team not found
 
             } catch (Exception e) {
-                System.err.println("Failed to fetch data from RobotEvents.");
+                Platform.runLater(() -> {
+                    // NEW: Handle actual internet/server crashes gracefully
+                    tablePlaceholder.setText("Connection Error. Please check your internet and try again.");
+                });
                 e.printStackTrace();
                 return null;
             }
 
             // --- 3. Hand data back to the UI Thread ---
         }).thenAccept(skillsData -> {
-            // Platform.runLater is required anytime we want to change the visual window
-            // from a background thread
             Platform.runLater(() -> {
-                // Reset the button back to its normal state
                 searchButton.setDisable(false);
                 searchButton.setText("Search");
 
-                // Check if we actually received data
                 if (skillsData != null && !skillsData.isEmpty()) {
 
-                    // --- 4. The Sorting Engine ---
-                    // This groups all runs by Season first, then groups them by Event Name,
-                    // and finally sorts by highest score at that specific event!
                     skillsData.sort((rank1, rank2) -> {
-                        // Priority 1: Compare Seasons (Descending so newest seasons are at the top)
                         int seasonCompare = Integer.compare(rank2.getSeasonId(), rank1.getSeasonId());
                         if (seasonCompare != 0) return seasonCompare;
 
-                        // Priority 2: Compare Events if they are in the exact same season
                         int eventCompare = rank1.getEventName().compareTo(rank2.getEventName());
                         if (eventCompare != 0) return eventCompare;
 
-                        // Priority 3: Compare Scores if they are at the exact same event (Highest score first)
                         return Integer.compare(rank2.getScore(), rank1.getScore());
                     });
 
-                    // Inject the beautifully sorted and grouped data into the table
                     skillsTable.getItems().setAll(skillsData);
 
-                } else {
-                    // If no data comes back, log it
-                    System.out.println("No skills records found for team: " + teamNumber);
+                } else if (skillsData != null && skillsData.isEmpty()) {
+                    // NEW: If the list is empty but the team IS real
+                    tablePlaceholder.setText("No skills runs recorded for " + teamNumber + ".");
                 }
             });
         });

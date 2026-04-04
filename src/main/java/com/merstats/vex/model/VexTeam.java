@@ -7,11 +7,12 @@ public class VexTeam {
     private int id;
     private String number;
     private String team_name;
+    private String grade; // Added grade variable
 
     public VexTeam() {
     }
 
-    //getters, setters
+    // --- Getters and Setters ---
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -29,5 +30,11 @@ public class VexTeam {
         this.team_name = team_name;
     }
 
-
+    // Added Getters and Setters for the Grade
+    public String getGrade() {
+        return grade;
+    }
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
 }

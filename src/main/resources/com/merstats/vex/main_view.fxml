@@ -53,9 +53,10 @@
                 <Label text="✦" styleClass="illustration-placeholder" />
 
                 <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="Ready to Query" styleClass="hero-header" />
-                    <Label text="Enter a unique Team ID to retrieve real-time telemetry and advanced analytics." styleClass="hero-subtitle" wrapText="true" />
+                    <Label fx:id="dashboardTitle" text="Ready to Query" styleClass="hero-header" />
+                    <Label fx:id="dashboardSubtitle" text="Enter a unique Team ID to retrieve real-time telemetry and advanced analytics." styleClass="hero-subtitle" wrapText="true" />
                 </VBox>
+
 
                 <HBox alignment="CENTER" styleClass="center-search-wrapper" maxWidth="550.0">
                     <VBox.margin>
