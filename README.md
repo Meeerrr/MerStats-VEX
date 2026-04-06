@@ -1,7 +1,8 @@
 # 📊 MerStats | VEX Robotics Analytics Platform
 
 <div align="center">
-  <img src="src/main/resources/com/merstats/vex/ui/logo.png" alt="MerStats Logo" width="150"/>
+  <img src="src/main/resources/com/merstats/vex/logo.png" alt="MerStats Logo" width="150"/>
+  
   <br/>
   <strong>Actionable insights and high-performance telemetry for the competitive VEX Robotics community.</strong>
 </div>
