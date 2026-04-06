@@ -17,7 +17,7 @@
 
 <BorderPane prefHeight="760.0" prefWidth="1150.0" styleClass="main-container" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.merstats.vex.ui.MainController">
     <left>
-        <VBox fx:id="sidebar" prefWidth="260.0" spacing="15.0" styleClass="sidebar">
+        <VBox fx:id="sidebar" prefWidth="260.0" spacing="12.0" styleClass="sidebar">
             <padding>
                 <Insets bottom="30.0" left="30.0" right="20.0" top="40.0" />
             </padding>
@@ -26,19 +26,30 @@
                 <VBox.margin>
                     <Insets bottom="30.0" />
                 </VBox.margin>
-                <Label text="Tech" styleClass="logo-text-primary" />
-                <Label text="Portal" styleClass="logo-text-accent" />
+                <Label text="Mer" styleClass="logo-text-primary" />
+                <Label text="Stats" styleClass="logo-text-accent" />
             </HBox>
 
-            <Label text="❖  Overview" styleClass="nav-link-active" />
-            <Label text="▤  System Logs" styleClass="nav-link" />
-            <Label text="🕮  Documentation" styleClass="nav-link" />
-            <Label text="⚙  Settings" styleClass="nav-link" />
+            <Label text="MAIN MENU" styleClass="nav-section-header" />
+            <Label fx:id="btnDashboard" text="❖  Team Dashboard" styleClass="nav-link-active" />
+            <Label fx:id="btnSkills" text="🎯  Skills Analytics" styleClass="nav-link" />
+            <Label fx:id="btnH2H" text="VS  Head-to-Head" styleClass="nav-link" />
+
+            <Region prefHeight="15.0" />
+
+            <Label text="COMPETITION" styleClass="nav-section-header" />
+            <Label fx:id="btnAwards" text="🏆  Awards Archive" styleClass="nav-link" />
+            <Label fx:id="btnEvents" text="📊  Event Statistics" styleClass="nav-link" />
+            <Label fx:id="btnLeaderboards" text="🌍  Leaderboards" styleClass="nav-link" />
+
+            <Region prefHeight="15.0" />
+
+            <Label text="SYSTEM" styleClass="nav-section-header" />
+            <Label fx:id="btnAbout" text="👤  About Me" styleClass="nav-link" />
+            <Label fx:id="btnSettings" text="⚙️  Settings" styleClass="nav-link" />
 
             <Region VBox.vgrow="ALWAYS" />
-
             <Label text="MerStats" styleClass="merstats-label" />
-            <Label text="SysAdmin Level 4" styleClass="merstats-subtitle" />
         </VBox>
     </left>
 
@@ -65,14 +76,16 @@
                 <VBox alignment="CENTER" spacing="5.0">
                     <Label fx:id="dashboardTitle" text="Ready to Query" styleClass="hero-header" />
                     <Label fx:id="dashboardSubtitle" text="Enter a unique Team ID to retrieve real-time telemetry and advanced analytics." styleClass="hero-subtitle" wrapText="true" />
-                </VBox> <HBox alignment="CENTER" styleClass="center-search-wrapper" maxWidth="550.0">
-                <VBox.margin>
-                    <Insets top="20.0" bottom="10.0"/>
-                </VBox.margin>
+                </VBox>
 
-                <TextField fx:id="teamInput" HBox.hgrow="ALWAYS" prefWidth="450.0" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
-                <Button fx:id="searchButton" minWidth="110.0" prefWidth="110.0" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
-            </HBox>
+                <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" maxWidth="550.0">
+                    <VBox.margin>
+                        <Insets top="20.0" bottom="10.0"/>
+                    </VBox.margin>
+
+                    <TextField fx:id="teamInput" HBox.hgrow="ALWAYS" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
+                    <Button fx:id="searchButton" minWidth="110.0" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
+                </HBox>
 
                 <ProgressBar fx:id="loadingBar" prefWidth="550.0" progress="-1.0" visible="false" styleClass="loading-bar">
                     <VBox.margin>
@@ -82,19 +95,47 @@
 
                 <TableView fx:id="skillsTable" prefHeight="300.0" prefWidth="800.0">
                     <columns>
-                        <TableColumn fx:id="seasonCol" prefWidth="150.0" text="Season" />
-                        <TableColumn fx:id="eventCol" prefWidth="250.0" text="Event Name" />
-                        <TableColumn fx:id="typeCol" prefWidth="100.0" text="Run Type" />
-                        <TableColumn fx:id="attemptCol" prefWidth="100.0" text="Attempt #" />
-                        <TableColumn fx:id="scoreCol" prefWidth="100.0" text="Score" />
-                        <TableColumn fx:id="rankCol" prefWidth="100.0" text="Global Rank" />
+                        <TableColumn fx:id="seasonCol" prefWidth="150.0" text="Season" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10;" />
+                        <TableColumn fx:id="eventCol" prefWidth="250.0" text="Event Name" style="-fx-alignment: CENTER-LEFT;" />
+                        <TableColumn fx:id="typeCol" prefWidth="100.0" text="Run Type" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="attemptCol" prefWidth="100.0" text="Attempt #" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="scoreCol" prefWidth="100.0" text="Score" style="-fx-alignment: CENTER; -fx-font-weight: bold;" />
+                        <TableColumn fx:id="rankCol" prefWidth="100.0" text="Global Rank" style="-fx-alignment: CENTER;" />
                     </columns>
                     <VBox.margin>
                         <Insets top="20.0" />
                     </VBox.margin>
                 </TableView>
-
             </VBox>
+
+            <VBox fx:id="aboutCard" visible="false" managed="false" alignment="CENTER" spacing="20.0" styleClass="content-card">
+                <padding>
+                    <Insets bottom="60.0" left="60.0" right="60.0" top="60.0" />
+                </padding>
+
+                <Label text="👨‍💻" style="-fx-font-size: 72px;" />
+                <Label text="Mer" styleClass="about-name" />
+                <Label text="Software Developer &amp; Robotics Analyst" styleClass="about-role" />
+
+                <Label text="I engineered this platform to bridge the gap between raw competition data and actionable insights. MerStats is designed to deliver a seamless, high-performance analytics experience for the competitive VEX Robotics community." styleClass="about-bio" wrapText="true" maxWidth="550.0" textAlignment="CENTER" />
+
+                <HBox alignment="CENTER" spacing="15.0">
+                    <VBox.margin>
+                        <Insets top="20.0" />
+                    </VBox.margin>
+                    <Button fx:id="btnGithub" text="GitHub (@Meeerrr)" styleClass="social-button" />
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="placeholderCard" visible="false" managed="false" alignment="CENTER" spacing="15.0" styleClass="content-card">
+                <padding>
+                    <Insets bottom="60.0" left="60.0" right="60.0" top="60.0" />
+                </padding>
+                <Label text="🚧" style="-fx-font-size: 80px;" />
+                <Label fx:id="placeholderTitle" text="Under Construction" styleClass="hero-header" />
+                <Label text="This analytics module is currently being developed. Check back soon for updates." styleClass="hero-subtitle" wrapText="true" />
+            </VBox>
+
         </StackPane>
     </center>
 </BorderPane>

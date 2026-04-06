@@ -1,359 +1,260 @@
 /* ========================================== */
-/* BASE THEME & VARIABLES                     */
+/* GLOBAL APPLICATION STYLING                 */
 /* ========================================== */
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
 .main-container {
-    /* Safe, modern font stack that works natively on Windows/Mac */
-    -fx-font-family: "Segoe UI", -apple-system, "Helvetica Neue", sans-serif;
-}
-
-* {
-    /* Modern Color Palette */
-    -accent-indigo: #6366f1;       /* Vibrant primary accent */
-    -accent-indigo-hover: #4f46e5;
-    -sidebar-bg: #0f172a;          /* Very dark slate */
-    -sidebar-text: #94a3b8;        /* Muted slate text */
-    -bg-light: #f1f5f9;            /* Cool-toned light gray background */
-    -text-dark: #1e293b;           /* Deep slate for main text */
-    -text-muted: #64748b;          /* Lighter text for subtitles */
+    -fx-background-color: #f1f5f9;
 }
 
 /* ========================================== */
-/* DARK SIDEBAR & TYPOGRAPHY                  */
+/* SIDEBAR (LEFT NAVIGATION)                  */
 /* ========================================== */
 .sidebar {
-    -fx-background-color: -sidebar-bg;
+    -fx-background-color: #0f172a;
 }
 
-/* Two-Tone Logo */
 .logo-text-primary {
     -fx-text-fill: #ffffff;
     -fx-font-size: 26px;
-    -fx-font-weight: 800;
-}
-.logo-text-accent {
-    -fx-text-fill: -accent-indigo;
-    -fx-font-size: 26px;
-    -fx-font-weight: 800;
+    -fx-font-weight: 900;
 }
 
-/* Navigation Links */
-.nav-link {
-    -fx-text-fill: -sidebar-text;
-    -fx-font-size: 15px;
-    -fx-font-weight: 500;
-    -fx-cursor: hand;
-    -fx-padding: 8 12;
-    -fx-background-radius: 6;
-    transition: -fx-background-color 0.2s, -fx-text-fill 0.2s;
+.logo-text-accent {
+    -fx-text-fill: #f97316;
+    -fx-font-size: 26px;
+    -fx-font-weight: 900;
 }
+
+.nav-section-header {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-letter-spacing: 1.5px;
+    -fx-padding: 15px 0px 5px 5px;
+}
+
+.nav-link {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-padding: 10px 15px;
+    -fx-cursor: hand;
+}
+
 .nav-link:hover {
     -fx-text-fill: #ffffff;
-    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8px;
 }
 
 .nav-link-active {
     -fx-text-fill: #ffffff;
-    -fx-font-size: 15px;
-    -fx-font-weight: 600;
-    -fx-padding: 8 12;
-    -fx-background-color: rgba(99, 102, 241, 0.15); /* Soft indigo background */
-    -fx-border-color: transparent transparent transparent -accent-indigo;
-    -fx-border-width: 0 0 0 3;
-    -fx-background-radius: 0 6 6 0;
+    -fx-background-color: #4f46e5;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 15px;
+    -fx-background-radius: 8px;
 }
 
-/* MerStats Branding */
 .merstats-label {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 20px;
-    -fx-font-weight: 700;
+    -fx-text-fill: #f8fafc;
+    -fx-font-weight: 800;
+    -fx-font-size: 14px;
 }
+
 .merstats-subtitle {
-    -fx-text-fill: -sidebar-text;
-    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+    -fx-font-size: 11px;
 }
 
 /* ========================================== */
-/* CENTER CONTENT & SOFT UI SHADOWS           */
+/* MAIN CONTENT CARD                          */
 /* ========================================== */
-.center-background {
-    -fx-background-color: -bg-light;
-}
-
 .content-card {
     -fx-background-color: #ffffff;
-    -fx-background-radius: 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.06), 40, 0, 0, 10);
-}
-
-.illustration-placeholder {
-    -fx-text-fill: rgba(99, 102, 241, 0.2);
-    -fx-font-size: 80px;
+    -fx-background-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 30, 0, 0, 10);
 }
 
 .hero-header {
-    -fx-text-fill: -text-dark;
-    -fx-font-size: 38px;
-    -fx-font-weight: 800;
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #0f172a;
 }
 
 .hero-subtitle {
-    -fx-text-fill: -text-muted;
-    -fx-font-size: 16px;
-    -fx-text-alignment: CENTER;
-}
-
-.section-label {
-    -fx-text-fill: -text-muted;
-    -fx-font-size: 12px;
-    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748b;
+    -fx-padding: 0 0 10 0;
 }
 
 /* ========================================== */
-/* PREMIUM SEARCH BAR (COMMAND PALETTE STYLE) */
+/* SEARCH BAR (EMBEDDED PILL DESIGN)          */
 /* ========================================== */
 .center-search-wrapper {
     -fx-background-color: #ffffff;
-    -fx-border-color: #e2e8f0;
-    -fx-border-width: 2;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    -fx-padding: 4;
-    transition: -fx-border-color 0.2s, -fx-effect 0.2s;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 30px;
+    -fx-background-radius: 30px;
+    -fx-padding: 6px;
 }
 
 .center-search-wrapper:focus-within {
-    -fx-border-color: -accent-indigo;
-    -fx-effect: dropshadow(three-pass-box, rgba(99, 102, 241, 0.25), 15, 0, 0, 0);
+    -fx-border-color: #4f46e5;
+    -fx-border-width: 2px;
+    -fx-padding: 5px;
 }
 
 .center-search-input {
     -fx-background-color: transparent;
-    -fx-prompt-text-fill: #94a3b8;
-    -fx-text-fill: -text-dark;
-    -fx-font-size: 16px;
-    -fx-padding: 10 20;
-    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-font-size: 15px;
+    -fx-text-fill: #0f172a;
+    -fx-prompt-text-fill: #94a3b8; /* Forcing the prompt text to be a visible gray! */
+    -fx-padding: 5px 15px;
 }
+
 .center-search-input:focused {
     -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
 .center-search-button {
-    -fx-background-color: -accent-indigo;
+    -fx-background-color: #4f46e5;
     -fx-text-fill: white;
+    -fx-font-weight: bold;
     -fx-font-size: 14px;
-    -fx-font-weight: 600;
-    -fx-padding: 10 24;
-    -fx-background-radius: 8;
+    -fx-background-radius: 25px;
+    -fx-padding: 10px 20px;
     -fx-cursor: hand;
-    transition: -fx-background-color 0.2s;
 }
+
 .center-search-button:hover {
-    -fx-background-color: -accent-indigo-hover;
+    -fx-background-color: #4338ca;
 }
 
 /* ========================================== */
-/* CHIP BUTTONS (RECENT QUERIES)              */
+/* TABLE STYLING (BEAUTIFIED)                 */
 /* ========================================== */
-.chip-button {
-    -fx-background-color: #f8fafc;
-    -fx-border-color: #e2e8f0;
-    -fx-border-radius: 20;
-    -fx-background-radius: 20;
-    -fx-text-fill: -text-dark;
-    -fx-font-size: 13px;
-    -fx-font-weight: 600;
-    -fx-padding: 6 16;
-    -fx-cursor: hand;
-    transition: -fx-background-color 0.2s, -fx-border-color 0.2s;
-}
-.chip-button:hover {
-    -fx-background-color: #ffffff;
-    -fx-border-color: -accent-indigo;
-    -fx-text-fill: -accent-indigo;
-}
-
-/* ========================================== */
-/* MODERN MINIMALIST TABLEVIEW                */
-/* ========================================== */
-
-/* Strip default borders */
 .table-view {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-padding: 0;
-    -fx-font-family: "Segoe UI", -apple-system, "Helvetica Neue", sans-serif;
-}
-
-/* The Header Container */
-.table-view .column-header-background {
-    -fx-background-color: transparent;
-    -fx-border-width: 0 0 1 0;
     -fx-border-color: #e2e8f0;
-}
-
-/* Individual Header Cells */
-.table-view .column-header {
-    -fx-background-color: transparent;
-    -fx-size: 40px;
-}
-
-/* Header Text Styling */
-.table-view .column-header .label {
-    -fx-text-fill: -text-muted;
-    -fx-font-size: 13px;
-    -fx-font-weight: 700;
-    -fx-alignment: center-left;
-    -fx-padding: 0 0 0 10px;
-}
-
-/* Hide empty space filler */
-.table-view .filler {
-    -fx-background-color: transparent;
-}
-
-/* The Rows */
-.table-row-cell {
-    -fx-background-color: transparent;
-    -fx-border-width: 0 0 1 0;
-    -fx-border-color: #f8fafc;
-    -fx-cell-size: 45px;
-    transition: -fx-background-color 0.2s;
-}
-
-/* Row Hover */
-.table-row-cell:hover {
-    -fx-background-color: rgba(99, 102, 241, 0.04);
-}
-
-/* Selected Row (No ugly blue) */
-.table-view:focused .table-row-cell:filled:selected,
-.table-view .table-row-cell:filled:selected {
-    -fx-background-color: rgba(99, 102, 241, 0.12);
-    -fx-table-cell-border-color: transparent;
-}
-
-/* Standard Cell Text */
-.table-cell {
-    -fx-text-fill: -text-dark;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-    -fx-border-color: transparent;
-    -fx-padding: 0 10px 0 10px;
-    -fx-alignment: center-left;
-}
-
-/* Polish: Emphasize Event Name (2nd Column) */
-.table-view .table-column:nth-child(2) .table-cell {
-    -fx-font-weight: 600;
-    -fx-text-fill: #0f172a;
-}
-
-/* Polish: Emphasize the Score (5th Column) */
-.table-view .table-column:nth-child(5) .table-cell {
-    -fx-font-weight: 800;
-    -fx-text-fill: -accent-indigo;
-    -fx-font-size: 15px;
-}
-
-/* Modern Scrollbars */
-.table-view .scroll-bar:vertical,
-.table-view .scroll-bar:horizontal {
-    -fx-background-color: transparent;
-}
-.table-view .scroll-bar:vertical .thumb,
-.table-view .scroll-bar:horizontal .thumb {
-    -fx-background-color: #cbd5e1;
+    -fx-border-radius: 10px;
     -fx-background-radius: 10px;
 }
 
-/* ========================================== */
-/* SEARCH HISTORY DROPDOWN                    */
-/* ========================================== */
-.history-popup {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 8;
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f8fafc;
+    -fx-border-width: 0 0 2 0;
     -fx-border-color: #e2e8f0;
-    -fx-border-radius: 8;
-    -fx-padding: 4;
-    /* Soft shadow to make it float beautifully above the table */
-    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.1), 15, 0, 0, 5);
+    -fx-padding: 12px 5px;
 }
 
-.history-popup .menu-item {
-    -fx-padding: 8 16 8 16;
-    -fx-background-radius: 6;
+.table-view .column-header .label {
+    -fx-font-weight: 800;
+    -fx-text-fill: #64748b;
 }
 
-.history-popup .menu-item .label {
-    -fx-text-fill: -text-dark;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
+.table-row-cell {
+    -fx-cell-size: 45px;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #f1f5f9;
 }
 
-/* Hover effect for the dropdown items */
-.history-popup .menu-item:focused,
-.history-popup .menu-item:hover {
-    -fx-background-color: #f1f5f9;
-}
+.table-row-cell:odd { -fx-background-color: #ffffff; }
+.table-row-cell:even { -fx-background-color: #f8fafc; }
+.table-row-cell:selected { -fx-background-color: #e0e7ff; }
 
-.history-popup .menu-item:focused .label,
-.history-popup .menu-item:hover .label {
-    -fx-text-fill: -accent-indigo;
+/* ========================================== */
+/* SLEEK SCROLLBARS (MAC STYLE)               */
+/* ========================================== */
+.table-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+}
+.table-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+}
+.table-view .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+}
+.table-view .scroll-bar:horizontal .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 6px;
+}
+.table-view .corner {
+    -fx-background-color: transparent;
 }
 
 /* ========================================== */
-/* TABLE EMPTY STATE (PLACEHOLDER)            */
+/* EMPTY STATE (PLACEHOLDER)                  */
 /* ========================================== */
 .placeholder-label {
-    -fx-text-fill: -text-muted;
+    -fx-text-fill: #64748b;
     -fx-font-size: 16px;
     -fx-font-weight: 600;
     -fx-padding: 40px;
-    /* Adding a subtle background to make it look like a cohesive card */
     -fx-background-color: #f8fafc;
     -fx-background-radius: 12px;
-    -fx-border-color: #e2e8f0;
+    -fx-border-color: #cbd5e1;
     -fx-border-radius: 12px;
     -fx-border-width: 2px;
-    -fx-border-style: dashed; /* Dashed border implies an empty drop-zone */
+    -fx-border-style: dashed;
 }
 
 /* ========================================== */
-/* CONDITIONAL FORMATTING (GLOBAL RANK)       */
+/* CONDITIONAL FORMATTING & ANIMATIONS        */
 /* ========================================== */
+.rank-gold { -fx-text-fill: #eab308; -fx-font-weight: 900; -fx-font-size: 15px; }
+.rank-green { -fx-text-fill: #22c55e; -fx-font-weight: 800; }
+.rank-standard { -fx-text-fill: #475569; -fx-font-weight: 600; }
 
-/* For World Champions / Rank 1 */
-.rank-gold {
-    -fx-text-fill: #eab308; /* Vibrant Gold */
+.loading-bar {
+    -fx-min-height: 3px; -fx-pref-height: 3px; -fx-max-height: 3px;
+    -fx-border-color: transparent; -fx-background-color: transparent;
+}
+.loading-bar .track { -fx-background-color: #e2e8f0; -fx-background-radius: 5px; }
+.loading-bar .bar { -fx-background-color: #4f46e5; -fx-background-radius: 5px; -fx-padding: 2px; }
+
+#mainLogo { -fx-effect: null; transition: -fx-effect 0.2s; }
+.logo-active-pulse #mainLogo { -fx-effect: dropshadow(three-pass-box, #4f46e5, 25, 0.5, 0, 0); }
+
+/* ========================================== */
+/* ABOUT ME & SYSTEM PAGES                    */
+/* ========================================== */
+.about-name {
+    -fx-font-size: 28px;
     -fx-font-weight: 900;
+    -fx-text-fill: #0f172a;
+}
+.about-role {
+    -fx-font-size: 16px;
+    -fx-text-fill: #4f46e5;
+    -fx-font-weight: bold;
+}
+.about-bio {
     -fx-font-size: 15px;
+    -fx-text-fill: #64748b;
+    -fx-line-spacing: 5px;
 }
-
-/* For Top 50 in the World */
-.rank-green {
-    -fx-text-fill: #22c55e; /* Bright Success Green */
-    -fx-font-weight: 800;
+.social-button {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #0f172a;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 25px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
 }
-
-/* For Standard Ranks */
-.rank-standard {
-    -fx-text-fill: -text-muted;
-    -fx-font-weight: 600;
-}
-
-/* ========================================== */
-/* INTERACTIVE LOGO ANIMATION (GLOW)          */
-/* ========================================== */
-
-/* Default state: No glow, clean look */
-#mainLogo {
-    -fx-effect: null;
-}
-
-/* Active state: Applied dynamically in Java during the search */
-.logo-active-pulse #mainLogo {
-    /* Casts a beautiful indigo glow behind the transparent PNG */
-    -fx-effect: dropshadow(three-pass-box, -accent-indigo, 25, 0.5, 0, 0);
+.social-button:hover {
+    -fx-background-color: #e2e8f0;
 }
