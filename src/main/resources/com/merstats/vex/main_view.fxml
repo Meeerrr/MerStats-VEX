@@ -26,8 +26,8 @@
                 <VBox.margin>
                     <Insets bottom="30.0" />
                 </VBox.margin>
-                <Label text="Mer" styleClass="logo-text-primary" />
-                <Label text="Stats" styleClass="logo-text-accent" />
+                <Label text="Tech" styleClass="logo-text-primary" />
+                <Label text="Portal" styleClass="logo-text-accent" />
             </HBox>
 
             <Label text="MAIN MENU" styleClass="nav-section-header" />
@@ -117,7 +117,7 @@
                 <Label text="Mer" styleClass="about-name" />
                 <Label text="Software Developer &amp; Robotics Analyst" styleClass="about-role" />
 
-                <Label text="I engineered this platform to bridge the gap between raw competition data and actionable insights. MerStats is designed to deliver a seamless, high-performance analytics experience for the competitive VEX Robotics community." styleClass="about-bio" wrapText="true" maxWidth="550.0" textAlignment="CENTER" />
+                <Label text="As a passionate developer and robotics enthusiast, I engineered this platform to bridge the gap between raw competition data and actionable insights. MerStats is designed to deliver a seamless, high-performance analytics experience for the competitive VEX Robotics community." styleClass="about-bio" wrapText="true" maxWidth="550.0" textAlignment="CENTER" />
 
                 <HBox alignment="CENTER" spacing="15.0">
                     <VBox.margin>
