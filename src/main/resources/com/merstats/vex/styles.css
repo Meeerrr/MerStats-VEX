@@ -113,7 +113,7 @@
     -fx-border-color: transparent;
     -fx-font-size: 15px;
     -fx-text-fill: #0f172a;
-    -fx-prompt-text-fill: #94a3b8; /* Forcing the prompt text to be a visible gray! */
+    -fx-prompt-text-fill: #94a3b8;
     -fx-padding: 5px 15px;
 }
 
@@ -228,6 +228,15 @@
 
 #mainLogo { -fx-effect: null; transition: -fx-effect 0.2s; }
 .logo-active-pulse #mainLogo { -fx-effect: dropshadow(three-pass-box, #4f46e5, 25, 0.5, 0, 0); }
+
+/* ========================================== */
+/* TRUERANK MMR TIERS (LEADERBOARD)           */
+/* ========================================== */
+.tier-dome { -fx-text-fill: #f59e0b; -fx-font-weight: 900; -fx-font-size: 15px; } /* Amber/Gold for Top 100 */
+.tier-titanium { -fx-text-fill: #6366f1; -fx-font-weight: 800; } /* Indigo */
+.tier-carbon { -fx-text-fill: #0f172a; -fx-font-weight: 800; }  /* Slate Black */
+.tier-aluminum { -fx-text-fill: #64748b; -fx-font-weight: 700; } /* Standard Gray */
+.tier-steel { -fx-text-fill: #94a3b8; -fx-font-weight: 600; }   /* Light Gray */
 
 /* ========================================== */
 /* ABOUT ME & SYSTEM PAGES                    */

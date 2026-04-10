@@ -10,6 +10,10 @@ import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -27,7 +31,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class MainController {
 
-    // --- FXML Navigation Links ---
     @FXML private Label btnDashboard;
     @FXML private Label btnSkills;
     @FXML private Label btnH2H;
@@ -37,15 +40,13 @@ public class MainController {
     @FXML private Label btnAbout;
     @FXML private Label btnSettings;
 
-    // --- FXML View Cards ---
     @FXML private VBox sidebar;
-    @FXML private VBox contentCard;     // The Dashboard
-    @FXML private VBox leaderboardCard; // The Leaderboard
-    @FXML private VBox aboutCard;       // About Me Page
-    @FXML private VBox placeholderCard; // Under Construction Page
+    @FXML private VBox contentCard;
+    @FXML private VBox leaderboardCard;
+    @FXML private VBox aboutCard;
+    @FXML private VBox placeholderCard;
     @FXML private Label placeholderTitle;
 
-    // --- Dashboard Elements ---
     @FXML private Button btnGithub;
     @FXML private ImageView mainLogo;
     @FXML private Label dashboardTitle;
@@ -62,8 +63,8 @@ public class MainController {
     @FXML private TableColumn<SkillsRanking, Integer> scoreCol;
     @FXML private TableColumn<SkillsRanking, Integer> dashRankCol;
 
-    // --- Leaderboard Elements ---
     @FXML private Button btnLoadLeaderboard;
+    @FXML private TextField lbSearchInput;
     @FXML private ProgressBar lbLoadingBar;
     @FXML private TableView<SeasonRanking> leaderboardTable;
     @FXML private TableColumn<SeasonRanking, Integer> lbRankCol;
@@ -74,22 +75,22 @@ public class MainController {
     @FXML private TableColumn<SeasonRanking, Integer> lbSpCol;
     @FXML private TableColumn<SeasonRanking, Double> lbTrueRankCol;
 
-    // --- State Variables ---
     private Label dashboardPlaceholder;
     private Label leaderboardPlaceholder;
     private final RobotEventsService apiService = new RobotEventsService();
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
-    // Constant for the current active season (Over Under / High Stakes etc.)
-    private static final int CURRENT_SEASON_ID = 181;
+    // 2024 VEX World Championship (Over Under)
+    private static final int TARGET_EVENT_ID = 3690;
+
+    private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
         setupDashboardTable();
         setupLeaderboardTable();
 
-        // Triggers & Engine Setup
         setupSearchHistoryPopup();
         searchButton.setOnAction(event -> handleSearch());
         btnLoadLeaderboard.setOnAction(event -> loadLeaderboardData());
@@ -97,7 +98,6 @@ public class MainController {
         setupNavigationRouter();
         setupSocialLinks();
 
-        // Initial Boot Animations
         playEntranceAnimation();
     }
 
@@ -113,11 +113,33 @@ public class MainController {
         dashboardPlaceholder = new Label("Ready to query. Enter a Team ID above.");
         dashboardPlaceholder.getStyleClass().add("placeholder-label");
         skillsTable.setPlaceholder(dashboardPlaceholder);
+
+        dashRankCol.setCellFactory(column -> new TableCell<SkillsRanking, Integer>() {
+            @Override
+            protected void updateItem(Integer rank, boolean empty) {
+                super.updateItem(rank, empty);
+                if (empty || rank == null) {
+                    setText(null);
+                    getStyleClass().removeAll("rank-gold", "rank-green", "rank-standard");
+                } else {
+                    getStyleClass().removeAll("rank-gold", "rank-green", "rank-standard");
+                    if (rank == 1) {
+                        getStyleClass().add("rank-gold");
+                        setText("🏆 " + rank);
+                    } else if (rank <= 50) {
+                        getStyleClass().add("rank-green");
+                        setText("🔥 " + rank);
+                    } else {
+                        getStyleClass().add("rank-standard");
+                        setText(String.valueOf(rank));
+                    }
+                }
+            }
+        });
     }
 
     private void setupLeaderboardTable() {
-        // Map Columns to SeasonRanking object methods
-        lbRankCol.setCellValueFactory(new PropertyValueFactory<>("rank")); // We will overwrite this with index visually later
+        lbRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
         lbTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamNumber"));
         lbRecordCol.setCellValueFactory(new PropertyValueFactory<>("record"));
         lbWpCol.setCellValueFactory(new PropertyValueFactory<>("wp"));
@@ -127,36 +149,48 @@ public class MainController {
 
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        leaderboardPlaceholder = new Label("Click 'Load' to fetch the global MMR standings.");
+        leaderboardPlaceholder = new Label("Click 'Load' to fetch the Event MMR standings.");
         leaderboardPlaceholder.getStyleClass().add("placeholder-label");
         leaderboardTable.setPlaceholder(leaderboardPlaceholder);
 
-        // --- VISUAL TIER BADGES LOGIC ---
         lbTrueRankCol.setCellFactory(column -> new TableCell<SeasonRanking, Double>() {
             @Override
             protected void updateItem(Double mmr, boolean empty) {
                 super.updateItem(mmr, empty);
-                if (empty || mmr == null) {
-                    setText(null);
-                    getStyleClass().removeAll("rank-gold", "rank-green", "rank-standard");
-                } else {
-                    getStyleClass().removeAll("rank-gold", "rank-green", "rank-standard");
 
-                    if (mmr >= 3000.0) {
-                        getStyleClass().add("rank-gold"); // Grandmaster Tier
-                        setText("⭐ " + mmr);
+                SeasonRanking teamData = null;
+                if (getTableRow() != null) {
+                    teamData = getTableRow().getItem();
+                }
+
+                if (empty || mmr == null || teamData == null) {
+                    setText(null);
+                    getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
+                } else {
+                    getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
+
+                    int globalRank = teamData.getRank();
+
+                    if (globalRank <= 100) {
+                        getStyleClass().add("tier-dome");
+                        setText("⭐ The Dome (" + mmr + ")");
+                    } else if (mmr >= 3000.0) {
+                        getStyleClass().add("tier-titanium");
+                        setText("⚙️ Titanium (" + mmr + ")");
                     } else if (mmr >= 2000.0) {
-                        getStyleClass().add("rank-green"); // Diamond Tier
-                        setText("💎 " + mmr);
+                        getStyleClass().add("tier-carbon");
+                        setText("🦾 Carbon Fiber (" + mmr + ")");
+                    } else if (mmr >= 1000.0) {
+                        getStyleClass().add("tier-aluminum");
+                        setText("🔧 Aluminum (" + mmr + ")");
                     } else {
-                        getStyleClass().add("rank-standard"); // Standard
-                        setText(String.valueOf(mmr));
+                        getStyleClass().add("tier-steel");
+                        setText("🔩 Steel (" + mmr + ")");
                     }
                 }
             }
         });
 
-        // --- INTERACTIVE CONTEXT MENU LOGIC ---
         leaderboardTable.setRowFactory(tv -> {
             TableRow<SeasonRanking> row = new TableRow<>();
             ContextMenu contextMenu = new ContextMenu();
@@ -169,7 +203,7 @@ public class MainController {
                 if (selectedTeam != null) {
                     teamInput.setText(selectedTeam.getTeamNumber());
                     switchView(contentCard, btnDashboard, "");
-                    handleSearch(); // Automatically trigger the dashboard search
+                    handleSearch();
                 }
             });
 
@@ -185,7 +219,6 @@ public class MainController {
 
             contextMenu.getItems().addAll(viewDashboardItem, copyIdItem);
 
-            // Only show menu if row contains a team
             row.emptyProperty().addListener((obs, wasEmpty, isNowEmpty) -> {
                 if (isNowEmpty) {
                     row.setContextMenu(null);
@@ -195,6 +228,25 @@ public class MainController {
             });
             return row;
         });
+
+        FilteredList<SeasonRanking> filteredData = new FilteredList<>(masterLeaderboardData, b -> true);
+
+        lbSearchInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(ranking -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                if (ranking.getTeamNumber().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                }
+                return false;
+            });
+        });
+
+        SortedList<SeasonRanking> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(leaderboardTable.comparatorProperty());
+        leaderboardTable.setItems(sortedData);
     }
 
     private void setupSocialLinks() {
@@ -210,9 +262,6 @@ public class MainController {
         });
     }
 
-    // =======================================================
-    // THE VIEW ROUTER ENGINE
-    // =======================================================
     private void setupNavigationRouter() {
         btnDashboard.setOnMouseClicked(e -> switchView(contentCard, btnDashboard, ""));
         btnSkills.setOnMouseClicked(e -> switchView(placeholderCard, btnSkills, "Skills Analytics"));
@@ -252,9 +301,6 @@ public class MainController {
         activeNavLabel.getStyleClass().add("nav-link-active");
     }
 
-    // =======================================================
-    // ANIMATIONS
-    // =======================================================
     private void playCardAnimation(VBox card) {
         card.setOpacity(0.0);
         card.setTranslateY(20.0);
@@ -275,18 +321,26 @@ public class MainController {
         playCardAnimation(contentCard);
     }
 
-    // =======================================================
-    // SEARCH & API LOGIC
-    // =======================================================
     private void loadLeaderboardData() {
         btnLoadLeaderboard.setDisable(true);
         btnLoadLeaderboard.setText("Calculating MMR...");
         lbLoadingBar.setVisible(true);
-        leaderboardTable.getItems().clear();
+
+        masterLeaderboardData.clear();
+        lbSearchInput.clear();
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                return apiService.getSeasonRankings(CURRENT_SEASON_ID);
+                // 1. First, dynamically locate the real Division ID for this event
+                int realDivisionId = apiService.getFirstDivisionId(TARGET_EVENT_ID);
+
+                if (realDivisionId == -1) {
+                    System.err.println("Could not resolve Division ID for Event " + TARGET_EVENT_ID);
+                    return null;
+                }
+
+                // 2. Fetch the rankings using that correct database ID
+                return apiService.getDivisionRankings(TARGET_EVENT_ID, realDivisionId);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -294,28 +348,26 @@ public class MainController {
         }).thenAccept((List<SeasonRanking> rankingsData) -> {
             Platform.runLater(() -> {
                 btnLoadLeaderboard.setDisable(false);
-                btnLoadLeaderboard.setText("Load Current Season");
+                btnLoadLeaderboard.setText("Load Event Leaderboard");
                 lbLoadingBar.setVisible(false);
 
                 if (rankingsData != null && !rankingsData.isEmpty()) {
-                    // Sort descending by TrueRank MMR
+
                     rankingsData.sort((r1, r2) -> Double.compare(r2.getTrueRankScore(), r1.getTrueRankScore()));
 
-                    // Manually assign correct visual ranks after sorting
                     for (int i = 0; i < rankingsData.size(); i++) {
-                        // Normally API returns rank, but we re-sort by MMR, so we override it for the UI
+                        rankingsData.get(i).setRank(i + 1);
                     }
 
-                    leaderboardTable.getItems().setAll(rankingsData);
+                    masterLeaderboardData.setAll(rankingsData);
 
-                    // Small fade animation for the table
                     leaderboardTable.setOpacity(0);
                     FadeTransition fade = new FadeTransition(Duration.millis(500), leaderboardTable);
                     fade.setToValue(1);
                     fade.play();
 
                 } else {
-                    leaderboardPlaceholder.setText("Error: Failed to fetch ranking data.");
+                    leaderboardPlaceholder.setText("No data returned. The event may only have a few teams, or API pagination is required.");
                 }
             });
         });

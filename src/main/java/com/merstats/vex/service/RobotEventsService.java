@@ -1,5 +1,6 @@
 package com.merstats.vex.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.merstats.vex.model.SeasonRanking;
 import com.merstats.vex.model.SeasonRankingResponse;
@@ -16,30 +17,19 @@ import java.util.List;
 
 public class RobotEventsService {
 
-    // API key
-    private static final String API_KEY = "Bearer API_KEY";
+    private static final String API_KEY = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNTE0MjRkZDAyMDQ1MzA1MGVlZGYzZjM2OGY4ODQ3NDFhZGMwOTZjMjExMTA1OWRiYWE0MDFiMDJjY2VhZGE1ZGE0OTc4ZmY1ZDhlYjNkNzciLCJpYXQiOjE3NzUxNDUzMzAuNTI1OTI5LCJuYmYiOjE3NzUxNDUzMzAuNTI1OTMwOSwiZXhwIjoyNzIxOTE2NTMwLjUyMDU3NzksInN1YiI6IjEyNjM3MyIsInNjb3BlcyI6W119.hZuGrp7w4nO6m8NOgm3iKsFZ5l85PV8W5yhP9mgnpgXuJCL71Tg9IWR4xTIdD1uVVEKAZGPhuwRybTGHO2jp171zVZFU-U4K7w0m_wj1xzqu8-yIHW6uzhxypMAF6Nixc__vT0gKcEuLZE_WECxRjd3PQTtZ7uOT8bu81bXpCWSSd-GtItSaGpZ10CeQ42VV0aFzNm2uMePINW2N-gMJxjbrKEIqcloNw8R8K_xdrpL8O8VwQJoQFPMmq24fLSmcsWX8l4aoDqwHWsKx19JNj80h6lwge5WdGcWxmYU1b1crESb8Od69GV78QwnM0QqgIu7KRbSqiBeOVE4GyxxIVflnQPoiRSRKz1k5I1dLEzoBwavG-LX2QZjtZZTL5gFLOc_rqJLb6Y4rANZvJBpRfFUJ0MNRn0Ert7Up5ahDZqkU3_67_CQAomZITP8MVK7O__btFScefR4m9mffete2ad2MSbY3PiN9sFFp3dFhYGnC9MJKCvYn-6jzll-4oJpzj41QvKLe8Dwpkqz3DxRV8v9dgQcgifcEUi8yix1V8_YtX-VlPiH3TKdDm6gMMQewxK-25KiajV7wSm2ZLfj_KW2CLc5qyr09egDWdhAJhn_hrkKqlaCjP6CFM998HIIkwPzW81bh3SmqRgzvobg7fgpRrA2CuvU96ZIWDplS8Mg"; // Ensure your live key is here
     private static final String BASE_URL = "https://www.robotevents.com/api/v2";
 
-    // Declare the client and mapper
     private final HttpClient client;
     private final ObjectMapper mapper;
 
-    // Construct
     public RobotEventsService() {
         this.client = HttpClient.newHttpClient();
         this.mapper = new ObjectMapper();
     }
 
-    /**
-     * Searches the API for a team by their number.
-     * @param teamNumber The team number (e.g., "254A")
-     * @return A VexTeam object, or null if the team is not found.
-     * @throws Exception if the network fails or JSON parsing breaks.
-     */
     public VexTeam getTeamByNumber(String teamNumber) throws Exception {
-
         String url = BASE_URL + "/teams?number%5B%5D=" + teamNumber;
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", API_KEY)
@@ -52,27 +42,15 @@ public class RobotEventsService {
         if (response.statusCode() == 200) {
             TeamResponse teamResponse = mapper.readValue(response.body(), TeamResponse.class);
             List<VexTeam> teams = teamResponse.getData();
-
             if (teams != null && !teams.isEmpty()) {
                 return teams.get(0);
             }
-        } else {
-            System.err.println("API Error: Received HTTP " + response.statusCode());
         }
-
         return null;
     }
 
-    /**
-     * Searches the API for a team's skills rankings using their internal ID.
-     * @param teamId The internal database ID of the team (e.g., 181)
-     * @return A List of SkillRanking objects.
-     * @throws Exception if the network fails or JSON parsing breaks.
-     */
     public List<SkillsRanking> getSkillsByTeamId(int teamId) throws Exception {
-
         String url = BASE_URL + "/teams/" + teamId + "/skills?per_page=250";
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", API_KEY)
@@ -85,21 +63,44 @@ public class RobotEventsService {
         if (response.statusCode() == 200) {
             SkillsResponse skillsResponse = mapper.readValue(response.body(), SkillsResponse.class);
             return skillsResponse.getData();
-        } else {
-            System.err.println("Skills API Error: Received HTTP " + response.statusCode());
-            return null;
         }
+        return null;
     }
 
     /**
-     * Fetches the global team rankings for a specific season to calculate TrueRank.
-     * @param seasonId The internal database ID of the VEX season.
-     * @return A List of SeasonRanking objects containing raw W/L/T, WP, AP, and SP.
-     * @throws Exception if the network fails or JSON parsing breaks.
+     * Dynamically fetches the internal database ID of the first division for a given event.
+     * @param eventId The internal database ID of the VEX event.
+     * @return The internal Division ID, or -1 if not found.
      */
-    public List<SeasonRanking> getSeasonRankings(int seasonId) throws Exception {
+    public int getFirstDivisionId(int eventId) throws Exception {
+        String url = BASE_URL + "/events/" + eventId;
 
-        String url = BASE_URL + "/seasons/" + seasonId + "/rankings?per_page=250";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", API_KEY)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            // Read the raw JSON into a navigable tree structure
+            JsonNode rootNode = mapper.readTree(response.body());
+            JsonNode divisions = rootNode.path("divisions");
+
+            // Verify the array exists and has at least one division
+            if (divisions.isArray() && divisions.size() > 0) {
+                return divisions.get(0).path("id").asInt();
+            }
+        } else {
+            System.err.println("Event Metadata API Error: Received HTTP " + response.statusCode());
+        }
+        return -1;
+    }
+
+    public List<SeasonRanking> getDivisionRankings(int eventId, int divisionId) throws Exception {
+        String url = BASE_URL + "/events/" + eventId + "/divisions/" + divisionId + "/rankings?per_page=250";
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -114,41 +115,8 @@ public class RobotEventsService {
             SeasonRankingResponse rankingResponse = mapper.readValue(response.body(), SeasonRankingResponse.class);
             return rankingResponse.getData();
         } else {
-            System.err.println("Season Rankings API Error: Received HTTP " + response.statusCode());
+            System.err.println("Division Rankings API Error: Received HTTP " + response.statusCode());
             return null;
-        }
-    }
-
-    // Temporary main method
-    public static void main(String[] args) {
-        RobotEventsService service = new RobotEventsService();
-        System.out.println("Starting TrueRank Test...");
-
-        try {
-            // Using a standard high school season ID (e.g., Over Under was 181)
-            int targetSeasonId = 181;
-            System.out.println("Fetching Global Rankings for Season ID " + targetSeasonId + "...");
-            List<SeasonRanking> globalRankings = service.getSeasonRankings(targetSeasonId);
-
-            if (globalRankings != null && !globalRankings.isEmpty()) {
-                System.out.println("\n--- TRUERANK LEADERBOARD (TOP 5) ---");
-
-                // Sort the array by our custom TrueRank score (Descending)
-                globalRankings.sort((t1, t2) -> Double.compare(t2.getTrueRankScore(), t1.getTrueRankScore()));
-
-                // Print the top 5 to test the logic
-                for (int i = 0; i < Math.min(5, globalRankings.size()); i++) {
-                    SeasonRanking rank = globalRankings.get(i);
-                    System.out.println(String.format("#%d | Team: %-6s | Record: %-7s | MMR: %.1f",
-                            (i+1), rank.getTeamNumber(), rank.getRecord(), rank.getTrueRankScore()));
-                }
-            } else {
-                System.out.println("No season ranking data found.");
-            }
-
-        } catch (Exception e) {
-            System.err.println("A network or parsing exception occurred!");
-            e.printStackTrace();
         }
     }
 }

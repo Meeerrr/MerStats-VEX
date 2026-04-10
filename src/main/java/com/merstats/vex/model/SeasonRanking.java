@@ -42,16 +42,34 @@ public class SeasonRanking {
         return Math.round(rawMmr * 10.0) / 10.0;
     }
 
-    // --- Getters ---
+    // --- Getters & Explicit Setters for Jackson JSON Parsing ---
+
     public VexTeam getTeam() { return team; }
+    public void setTeam(VexTeam team) { this.team = team; }
+
     public VexEventInfo getEvent() { return event; }
+    public void setEvent(VexEventInfo event) { this.event = event; }
+
     public int getRank() { return rank; }
+    public void setRank(int rank) { this.rank = rank; }
+
     public int getWins() { return wins; }
+    public void setWins(int wins) { this.wins = wins; }
+
     public int getLosses() { return losses; }
+    public void setLosses(int losses) { this.losses = losses; }
+
     public int getTies() { return ties; }
+    public void setTies(int ties) { this.ties = ties; }
+
     public int getWp() { return wp; }
+    public void setWp(int wp) { this.wp = wp; }
+
     public int getAp() { return ap; }
+    public void setAp(int ap) { this.ap = ap; }
+
     public int getSp() { return sp; }
+    public void setSp(int sp) { this.sp = sp; }
 
     // --- UI Convenience Methods ---
     public String getTeamNumber() {
