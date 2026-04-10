@@ -15,35 +15,23 @@ public class SeasonRanking {
     private int ap;
     private int sp;
 
-    // Empty constructor for Jackson JSON deserialization
     public SeasonRanking() {
     }
 
     // --- Core Algorithm: TrueRank MMR ---
     public double getTrueRankScore() {
         int totalMatches = wins + losses + ties;
+        if (totalMatches == 0) return 0.0;
 
-        // Prevent Divide-By-Zero errors for teams with 0 played matches
-        if (totalMatches == 0) {
-            return 0.0;
-        }
-
-        // VEX specific Win Rate formula using Win Points (WP)
         double winRate = (double) wp / (totalMatches * 2);
-
-        // Averages
         double avgAp = (double) ap / totalMatches;
         double avgSp = (double) sp / totalMatches;
 
-        // TrueRank Calculation
         double rawMmr = (winRate * 400.0) + (avgAp * 3.0) + (avgSp * 1.5);
-
-        // Round to exactly one decimal place for clean UI rendering (e.g., 2145.5)
         return Math.round(rawMmr * 10.0) / 10.0;
     }
 
-    // --- Getters & Explicit Setters for Jackson JSON Parsing ---
-
+    // --- Getters & Setters ---
     public VexTeam getTeam() { return team; }
     public void setTeam(VexTeam team) { this.team = team; }
 
@@ -73,11 +61,19 @@ public class SeasonRanking {
 
     // --- UI Convenience Methods ---
     public String getTeamNumber() {
-        return team != null ? team.getNumber() : "Unknown";
+        return team != null && team.getNumber() != null ? team.getNumber() : "Unknown";
     }
 
     public String getTeamName() {
-        return team != null ? team.getTeam_name() : "Unknown";
+        return team != null && team.getTeam_name() != null ? team.getTeam_name() : "Unknown";
+    }
+
+    // ADDED: Combines number and name for the Leaderboard UI (e.g., "254A | RoboKings")
+    public String getTeamDisplay() {
+        if (team == null) return "Unknown Team";
+        String num = team.getNumber() != null ? team.getNumber() : "???";
+        String name = team.getTeam_name() != null ? team.getTeam_name() : "Unknown";
+        return num + " | " + name;
     }
 
     public String getRecord() {

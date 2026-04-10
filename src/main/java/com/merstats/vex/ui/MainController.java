@@ -81,8 +81,7 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
-    // 2024 VEX World Championship (Over Under)
-    private static final int TARGET_EVENT_ID = 3690;
+    private static final String TARGET_EVENT_SKU = "RE-VRC-23-3690";
 
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
 
@@ -140,13 +139,18 @@ public class MainController {
 
     private void setupLeaderboardTable() {
         lbRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
-        lbTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamNumber"));
+
+        // CHANGED: Now binds to the newly combined Team Display string
+        lbTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamDisplay"));
+
         lbRecordCol.setCellValueFactory(new PropertyValueFactory<>("record"));
         lbWpCol.setCellValueFactory(new PropertyValueFactory<>("wp"));
         lbApCol.setCellValueFactory(new PropertyValueFactory<>("ap"));
         lbSpCol.setCellValueFactory(new PropertyValueFactory<>("sp"));
         lbTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("trueRankScore"));
 
+        // Increase width slightly to accommodate the new longer team names
+        lbTeamCol.setPrefWidth(220.0);
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         leaderboardPlaceholder = new Label("Click 'Load' to fetch the Event MMR standings.");
@@ -171,16 +175,17 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
 
+                    // --- REBALANCED MMR THRESHOLDS ---
                     if (globalRank <= 100) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
-                    } else if (mmr >= 3000.0) {
+                    } else if (mmr >= 600.0) {
                         getStyleClass().add("tier-titanium");
                         setText("⚙️ Titanium (" + mmr + ")");
-                    } else if (mmr >= 2000.0) {
+                    } else if (mmr >= 500.0) {
                         getStyleClass().add("tier-carbon");
                         setText("🦾 Carbon Fiber (" + mmr + ")");
-                    } else if (mmr >= 1000.0) {
+                    } else if (mmr >= 400.0) {
                         getStyleClass().add("tier-aluminum");
                         setText("🔧 Aluminum (" + mmr + ")");
                     } else {
@@ -237,7 +242,9 @@ public class MainController {
                     return true;
                 }
                 String lowerCaseFilter = newValue.toLowerCase();
-                if (ranking.getTeamNumber().toLowerCase().contains(lowerCaseFilter)) {
+
+                // CHANGED: Now searches against both Team Number AND Team Name
+                if (ranking.getTeamDisplay().toLowerCase().contains(lowerCaseFilter)) {
                     return true;
                 }
                 return false;
@@ -331,16 +338,7 @@ public class MainController {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                // 1. First, dynamically locate the real Division ID for this event
-                int realDivisionId = apiService.getFirstDivisionId(TARGET_EVENT_ID);
-
-                if (realDivisionId == -1) {
-                    System.err.println("Could not resolve Division ID for Event " + TARGET_EVENT_ID);
-                    return null;
-                }
-
-                // 2. Fetch the rankings using that correct database ID
-                return apiService.getDivisionRankings(TARGET_EVENT_ID, realDivisionId);
+                return apiService.getEventRankingsBySku(TARGET_EVENT_SKU);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -367,7 +365,7 @@ public class MainController {
                     fade.play();
 
                 } else {
-                    leaderboardPlaceholder.setText("No data returned. The event may only have a few teams, or API pagination is required.");
+                    leaderboardPlaceholder.setText("Error: Failed to fetch ranking data. Please verify the SKU.");
                 }
             });
         });
