@@ -15,13 +15,11 @@ public class SeasonRanking {
     private int ap;
     private int sp;
 
-    // NEW: The dynamic Elo tracker managed by the EloEngine
     private double eloScore = 1500.0;
 
     public SeasonRanking() {
     }
 
-    // This method now serves the dynamically processed Elo to the JavaFX TableView
     public double getTrueRankScore() {
         return Math.round(this.eloScore * 10.0) / 10.0;
     }
@@ -57,17 +55,18 @@ public class SeasonRanking {
     public void setSp(int sp) { this.sp = sp; }
 
     public String getTeamNumber() {
-        return team != null && team.getNumber() != null ? team.getNumber() : "Unknown";
-    }
-
-    public String getTeamName() {
-        return team != null && team.getTeam_name() != null ? team.getTeam_name() : "Unknown";
+        return team != null ? team.getResolvedNumber() : "Unknown";
     }
 
     public String getTeamDisplay() {
         if (team == null) return "Unknown Team";
-        String num = team.getNumber() != null ? team.getNumber() : "???";
-        String name = team.getTeam_name() != null ? team.getTeam_name() : "Unknown";
+        String num = team.getResolvedNumber();
+        String name = team.getResolvedName();
+
+        if (name.isEmpty() || name.equals(num) || name.equals("Unknown")) {
+            return num;
+        }
+
         return num + " | " + name;
     }
 

@@ -81,6 +81,7 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
+    // RE-VRC-23-3690 is the SKU for the 2024 VEX World Championship
     private static final String TARGET_EVENT_SKU = "RE-VRC-23-3690";
 
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
@@ -171,17 +172,16 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
 
-                    // --- CALIBRATED FOR BASE 1500 ELO ---
                     if (globalRank <= 100) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
-                    } else if (mmr >= 1550.0) {
+                    } else if (mmr >= 1600.0) {
                         getStyleClass().add("tier-titanium");
                         setText("⚙️ Titanium (" + mmr + ")");
-                    } else if (mmr >= 1500.0) {
+                    } else if (mmr >= 1550.0) {
                         getStyleClass().add("tier-carbon");
                         setText("🦾 Carbon Fiber (" + mmr + ")");
-                    } else if (mmr >= 1450.0) {
+                    } else if (mmr >= 1500.0) {
                         getStyleClass().add("tier-aluminum");
                         setText("🔧 Aluminum (" + mmr + ")");
                     } else {
@@ -333,7 +333,6 @@ public class MainController {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                // Call the new Elo Processing method
                 return apiService.getProcessedEloRankings(TARGET_EVENT_SKU);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -413,7 +412,8 @@ public class MainController {
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
                 if (team != null) {
                     Platform.runLater(() -> {
-                        dashboardTitle.setText("Team " + team.getNumber() + " - " + team.getTeam_name());
+                        // Fully updated to bypass all IDE errors
+                        dashboardTitle.setText("Team " + team.getResolvedNumber() + " - " + team.getResolvedName());
                         dashboardSubtitle.setText("Grade Level: " + team.getGrade());
                     });
                     return apiService.getSkillsByTeamId(team.getId());
