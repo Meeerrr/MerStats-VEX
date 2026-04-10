@@ -16,15 +16,15 @@ Developed from the ground up with **Java** and **JavaFX**, MerStats features a p
 
 ## ✨ Core Features
 - **⚡ Real-Time Telemetry:** Instantly query any VEX Team ID (e.g., `11017Y`) to pull live, sorted data directly from the RobotEvents servers.
+- **🧠 TrueRank Elo Engine:** Replaces standard Win/Loss records with a dynamic, chronological 2v2 Elo algorithm. It calculates expected win probabilities match-by-match, rewarding massive points for upsets and punishing "carried" teams to reveal true field dominance.
+- **🌍 Global Event Leaderboards:** Instantly aggregate and rank every single team across massive tournaments (like the World Championship) using parallel CPU processing to fetch hundreds of matches in seconds.
 - **📈 Advanced Skills Sorting:** Automatically categorizes and ranks a team's highest-performing Driver and Programming skills runs across multiple seasons and events.
 - **🎨 Premium UX/UI:** Features a custom-built routing engine, dynamic CSS styling, responsive floating cards, Mac-style scrollbars, and fluid data-arrival animations.
-- **🧠 Smart Caching:** Includes an integrated session-memory system that tracks recent searches via an intuitive contextual dropdown menu.
-- **🔒 Secure Architecture:** Built using robust `CompletableFuture` background threading to ensure safe, reliable API transactions and graceful error handling for invalid IDs or network drops.
+- **🔒 Secure Architecture:** Built using robust `CompletableFuture` background threading to ensure safe, reliable API transactions and graceful error handling.
 
 ## 🛠️ Upcoming Modules (In Development)
 - **⚔️ Head-to-Head Simulator:** Predictive matchup analytics and historical win-rate comparisons.
 - **🏆 Awards Archive:** A visual trophy case tracking Excellence, Champion, and Design awards.
-- **🌍 Global Leaderboards:** Dynamic tracking of the highest-rated teams worldwide.
 
 ---
 
