@@ -15,23 +15,20 @@ public class SeasonRanking {
     private int ap;
     private int sp;
 
+    // NEW: The dynamic Elo tracker managed by the EloEngine
+    private double eloScore = 1500.0;
+
     public SeasonRanking() {
     }
 
-    // --- Core Algorithm: TrueRank MMR ---
+    // This method now serves the dynamically processed Elo to the JavaFX TableView
     public double getTrueRankScore() {
-        int totalMatches = wins + losses + ties;
-        if (totalMatches == 0) return 0.0;
-
-        double winRate = (double) wp / (totalMatches * 2);
-        double avgAp = (double) ap / totalMatches;
-        double avgSp = (double) sp / totalMatches;
-
-        double rawMmr = (winRate * 400.0) + (avgAp * 3.0) + (avgSp * 1.5);
-        return Math.round(rawMmr * 10.0) / 10.0;
+        return Math.round(this.eloScore * 10.0) / 10.0;
     }
 
-    // --- Getters & Setters ---
+    public double getEloScore() { return eloScore; }
+    public void setEloScore(double eloScore) { this.eloScore = eloScore; }
+
     public VexTeam getTeam() { return team; }
     public void setTeam(VexTeam team) { this.team = team; }
 
@@ -59,7 +56,6 @@ public class SeasonRanking {
     public int getSp() { return sp; }
     public void setSp(int sp) { this.sp = sp; }
 
-    // --- UI Convenience Methods ---
     public String getTeamNumber() {
         return team != null && team.getNumber() != null ? team.getNumber() : "Unknown";
     }
@@ -68,7 +64,6 @@ public class SeasonRanking {
         return team != null && team.getTeam_name() != null ? team.getTeam_name() : "Unknown";
     }
 
-    // ADDED: Combines number and name for the Leaderboard UI (e.g., "254A | RoboKings")
     public String getTeamDisplay() {
         if (team == null) return "Unknown Team";
         String num = team.getNumber() != null ? team.getNumber() : "???";

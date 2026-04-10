@@ -139,21 +139,17 @@ public class MainController {
 
     private void setupLeaderboardTable() {
         lbRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
-
-        // CHANGED: Now binds to the newly combined Team Display string
         lbTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamDisplay"));
-
         lbRecordCol.setCellValueFactory(new PropertyValueFactory<>("record"));
         lbWpCol.setCellValueFactory(new PropertyValueFactory<>("wp"));
         lbApCol.setCellValueFactory(new PropertyValueFactory<>("ap"));
         lbSpCol.setCellValueFactory(new PropertyValueFactory<>("sp"));
         lbTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("trueRankScore"));
 
-        // Increase width slightly to accommodate the new longer team names
         lbTeamCol.setPrefWidth(220.0);
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        leaderboardPlaceholder = new Label("Click 'Load' to fetch the Event MMR standings.");
+        leaderboardPlaceholder = new Label("Click 'Load' to sequence match schedules and build MMR standings.");
         leaderboardPlaceholder.getStyleClass().add("placeholder-label");
         leaderboardTable.setPlaceholder(leaderboardPlaceholder);
 
@@ -175,17 +171,17 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
 
-                    // --- REBALANCED MMR THRESHOLDS ---
+                    // --- CALIBRATED FOR BASE 1500 ELO ---
                     if (globalRank <= 100) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
-                    } else if (mmr >= 600.0) {
+                    } else if (mmr >= 1550.0) {
                         getStyleClass().add("tier-titanium");
                         setText("⚙️ Titanium (" + mmr + ")");
-                    } else if (mmr >= 500.0) {
+                    } else if (mmr >= 1500.0) {
                         getStyleClass().add("tier-carbon");
                         setText("🦾 Carbon Fiber (" + mmr + ")");
-                    } else if (mmr >= 400.0) {
+                    } else if (mmr >= 1450.0) {
                         getStyleClass().add("tier-aluminum");
                         setText("🔧 Aluminum (" + mmr + ")");
                     } else {
@@ -243,7 +239,6 @@ public class MainController {
                 }
                 String lowerCaseFilter = newValue.toLowerCase();
 
-                // CHANGED: Now searches against both Team Number AND Team Name
                 if (ranking.getTeamDisplay().toLowerCase().contains(lowerCaseFilter)) {
                     return true;
                 }
@@ -338,7 +333,8 @@ public class MainController {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                return apiService.getEventRankingsBySku(TARGET_EVENT_SKU);
+                // Call the new Elo Processing method
+                return apiService.getProcessedEloRankings(TARGET_EVENT_SKU);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;

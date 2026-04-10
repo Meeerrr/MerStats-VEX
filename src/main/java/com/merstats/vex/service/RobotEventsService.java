@@ -53,30 +53,27 @@ public class RobotEventsService {
         return null;
     }
 
-    public List<SeasonRanking> getEventRankingsBySku(String sku) throws Exception {
+    /**
+     * Downloads the division rankings, then immediately downloads the match schedule for that division,
+     * routes the data through the EloEngine, and returns the mathematically updated list.
+     */
+    public List<SeasonRanking> getProcessedEloRankings(String sku) throws Exception {
 
         String eventUrl = BASE_URL + "/events?sku%5B%5D=" + sku;
         HttpRequest eventRequest = HttpRequest.newBuilder().uri(URI.create(eventUrl)).header("Authorization", API_KEY).header("Accept", "application/json").GET().build();
         HttpResponse<String> eventResponse = client.send(eventRequest, HttpResponse.BodyHandlers.ofString());
 
-        if (eventResponse.statusCode() != 200) {
-            System.err.println("Event Search API Error: Received HTTP " + eventResponse.statusCode());
-            return null;
-        }
+        if (eventResponse.statusCode() != 200) return null;
 
         JsonNode rootNode = mapper.readTree(eventResponse.body());
         JsonNode dataArray = rootNode.path("data");
 
-        if (!dataArray.isArray() || dataArray.isEmpty()) {
-            System.err.println("Error: Could not find any event matching SKU: " + sku);
-            return null;
-        }
+        if (!dataArray.isArray() || dataArray.isEmpty()) return null;
 
         JsonNode eventNode = dataArray.get(0);
         int hiddenEventId = eventNode.path("id").asInt();
         JsonNode divisionsArray = eventNode.path("divisions");
 
-        // 1. Extract all division IDs into a list
         List<Integer> divisionIds = new ArrayList<>();
         if (divisionsArray.isArray()) {
             for (JsonNode divisionNode : divisionsArray) {
@@ -84,30 +81,40 @@ public class RobotEventsService {
             }
         }
 
-        // 2. Create a Thread-Safe list to hold the incoming data from multiple threads
         List<SeasonRanking> masterRankingsList = Collections.synchronizedList(new ArrayList<>());
 
-        // 3. The Multi-Threading Engine: Fetch all divisions simultaneously!
         divisionIds.parallelStream().forEach(divId -> {
             try {
+                // 1. Fetch the base rankings (Provides the Team Roster and total W-L-T stats)
                 String rankUrl = BASE_URL + "/events/" + hiddenEventId + "/divisions/" + divId + "/rankings?per_page=250";
-                HttpRequest rankRequest = HttpRequest.newBuilder()
-                        .uri(URI.create(rankUrl))
-                        .header("Authorization", API_KEY)
-                        .header("Accept", "application/json")
-                        .GET()
-                        .build();
-
+                HttpRequest rankRequest = HttpRequest.newBuilder().uri(URI.create(rankUrl)).header("Authorization", API_KEY).header("Accept", "application/json").GET().build();
                 HttpResponse<String> rankResponse = client.send(rankRequest, HttpResponse.BodyHandlers.ofString());
 
+                List<SeasonRanking> divisionRoster = new ArrayList<>();
                 if (rankResponse.statusCode() == 200) {
                     SeasonRankingResponse rankingResponse = mapper.readValue(rankResponse.body(), SeasonRankingResponse.class);
                     if (rankingResponse.getData() != null) {
-                        masterRankingsList.addAll(rankingResponse.getData());
+                        divisionRoster.addAll(rankingResponse.getData());
                     }
                 }
+
+                // 2. Fetch the Match Schedule for this specific division
+                String matchUrl = BASE_URL + "/events/" + hiddenEventId + "/divisions/" + divId + "/matches?per_page=250";
+                HttpRequest matchRequest = HttpRequest.newBuilder().uri(URI.create(matchUrl)).header("Authorization", API_KEY).header("Accept", "application/json").GET().build();
+                HttpResponse<String> matchResponse = client.send(matchRequest, HttpResponse.BodyHandlers.ofString());
+
+                if (matchResponse.statusCode() == 200) {
+                    JsonNode matchRoot = mapper.readTree(matchResponse.body());
+                    JsonNode matchArray = matchRoot.path("data");
+
+                    // 3. Process the chronological ELO for this division's roster
+                    EloEngine.calculateTrueRank(divisionRoster, matchArray);
+                }
+
+                // Append the fully processed division into the master global leaderboard
+                masterRankingsList.addAll(divisionRoster);
+
             } catch (Exception e) {
-                System.err.println("Failed to fetch division " + divId);
                 e.printStackTrace();
             }
         });
