@@ -1,13 +1,21 @@
 package com.merstats.vex.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VexTeam {
     private int id;
+
+    // Accept either "number" or "code" from the API
+    @JsonAlias({"number", "code"})
     private String number;
+
+    // Accept either "team_name" or "name" from the API
+    @JsonAlias({"team_name", "name"})
     private String team_name;
-    private String grade; // Added grade variable
+
+    private String grade;
 
     public VexTeam() {
     }
@@ -30,7 +38,6 @@ public class VexTeam {
         this.team_name = team_name;
     }
 
-    // Added Getters and Setters for the Grade
     public String getGrade() {
         return grade;
     }
