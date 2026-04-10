@@ -14,6 +14,7 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.control.ComboBox?>
 
 <BorderPane prefHeight="760.0" prefWidth="1150.0" styleClass="main-container" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.merstats.vex.ui.MainController">
     <left>
@@ -100,11 +101,39 @@
                         <TableColumn fx:id="typeCol" prefWidth="100.0" text="Run Type" style="-fx-alignment: CENTER;" />
                         <TableColumn fx:id="attemptCol" prefWidth="100.0" text="Attempt #" style="-fx-alignment: CENTER;" />
                         <TableColumn fx:id="scoreCol" prefWidth="100.0" text="Score" style="-fx-alignment: CENTER; -fx-font-weight: bold;" />
-                        <TableColumn fx:id="rankCol" prefWidth="100.0" text="Global Rank" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="dashRankCol" prefWidth="100.0" text="Global Rank" style="-fx-alignment: CENTER;" />
                     </columns>
                     <VBox.margin>
                         <Insets top="20.0" />
                     </VBox.margin>
+                </TableView>
+            </VBox>
+
+            <VBox fx:id="leaderboardCard" visible="false" managed="false" alignment="TOP_CENTER" spacing="20.0" styleClass="content-card">
+                <padding>
+                    <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                </padding>
+
+                <VBox alignment="CENTER" spacing="5.0">
+                    <Label text="Global TrueRank Leaderboard" styleClass="hero-header" />
+                    <Label text="Right-click any team for quick actions and deep telemetry." styleClass="hero-subtitle" wrapText="true" />
+                </VBox>
+
+                <HBox alignment="CENTER" spacing="15.0">
+                    <Button fx:id="btnLoadLeaderboard" text="Load Current Season" styleClass="center-search-button" />
+                    <ProgressBar fx:id="lbLoadingBar" prefWidth="200.0" progress="-1.0" visible="false" styleClass="loading-bar"/>
+                </HBox>
+
+                <TableView fx:id="leaderboardTable" VBox.vgrow="ALWAYS" prefWidth="850.0">
+                    <columns>
+                        <TableColumn fx:id="lbRankCol" prefWidth="80.0" text="Rank" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="lbTeamCol" prefWidth="120.0" text="Team" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10; -fx-font-weight: bold;" />
+                        <TableColumn fx:id="lbRecordCol" prefWidth="120.0" text="W-L-T" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="lbWpCol" prefWidth="80.0" text="WP" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="lbApCol" prefWidth="80.0" text="AP" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="lbSpCol" prefWidth="80.0" text="SP" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="lbTrueRankCol" prefWidth="150.0" text="TrueRank MMR" style="-fx-alignment: CENTER; -fx-font-weight: bold; -fx-font-size: 14px;" />
+                    </columns>
                 </TableView>
             </VBox>
 
