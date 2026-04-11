@@ -47,6 +47,10 @@ public class MainController {
     @FXML private VBox placeholderCard;
     @FXML private Label placeholderTitle;
 
+    // --- NEW IN-APP OVERLAY ELEMENTS ---
+    @FXML private VBox eloOverlay;
+    @FXML private Button btnCloseOverlay;
+
     @FXML private Button btnGithub;
     @FXML private ImageView mainLogo;
     @FXML private Label dashboardTitle;
@@ -65,6 +69,7 @@ public class MainController {
 
     @FXML private Button btnLoadLeaderboard;
     @FXML private TextField lbSearchInput;
+    @FXML private Button btnHowItWorks;
     @FXML private ProgressBar lbLoadingBar;
     @FXML private TableView<SeasonRanking> leaderboardTable;
     @FXML private TableColumn<SeasonRanking, Integer> lbRankCol;
@@ -81,7 +86,6 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
-    // RE-VRC-23-3690 is the SKU for the 2024 VEX World Championship
     private static final String TARGET_EVENT_SKU = "RE-VRC-23-3690";
 
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
@@ -94,6 +98,10 @@ public class MainController {
         setupSearchHistoryPopup();
         searchButton.setOnAction(event -> handleSearch());
         btnLoadLeaderboard.setOnAction(event -> loadLeaderboardData());
+
+        // --- Overlay Interactions ---
+        btnHowItWorks.setOnAction(event -> showEloExplanation());
+        btnCloseOverlay.setOnAction(event -> hideEloExplanation());
 
         setupNavigationRouter();
         setupSocialLinks();
@@ -412,7 +420,6 @@ public class MainController {
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
                 if (team != null) {
                     Platform.runLater(() -> {
-                        // Fully updated to bypass all IDE errors
                         dashboardTitle.setText("Team " + team.getResolvedNumber() + " - " + team.getResolvedName());
                         dashboardSubtitle.setText("Grade Level: " + team.getGrade());
                     });
@@ -475,6 +482,27 @@ public class MainController {
                 }
             });
         });
+    }
+
+    // --- CHANGED: Replaced the OS Alert with a sleek in-app overlay animation ---
+    private void showEloExplanation() {
+        eloOverlay.setOpacity(0.0);
+        eloOverlay.setVisible(true);
+        eloOverlay.setManaged(true);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
+        fade.setToValue(1.0);
+        fade.play();
+    }
+
+    private void hideEloExplanation() {
+        FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
+        fade.setToValue(0.0);
+        fade.setOnFinished(e -> {
+            eloOverlay.setVisible(false);
+            eloOverlay.setManaged(false);
+        });
+        fade.play();
     }
 
     private RotateTransition createLogoAnimation() {

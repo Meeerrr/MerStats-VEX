@@ -47,7 +47,8 @@
 
             <Label text="SYSTEM" styleClass="nav-section-header" />
             <Label fx:id="btnAbout" text="👤  About Me" styleClass="nav-link" />
-            <Label fx:id="btnSettings" text="⚙️  Settings" styleClass="nav-link" />
+
+            <Label fx:id="btnSettings" text="⚙  Settings" styleClass="nav-link" />
 
             <Region VBox.vgrow="ALWAYS" />
             <Label text="MerStats" styleClass="merstats-label" />
@@ -126,6 +127,8 @@
                         <TextField fx:id="lbSearchInput" HBox.hgrow="ALWAYS" promptText="Filter by Team..." styleClass="center-search-input" />
                     </HBox>
 
+                    <Button fx:id="btnHowItWorks" text="ⓘ How it Works" styleClass="social-button" />
+
                     <ProgressBar fx:id="lbLoadingBar" prefWidth="150.0" progress="-1.0" visible="false" styleClass="loading-bar"/>
                 </HBox>
 
@@ -168,6 +171,23 @@
                 <Label text="🚧" style="-fx-font-size: 80px;" />
                 <Label fx:id="placeholderTitle" text="Under Construction" styleClass="hero-header" />
                 <Label text="This analytics module is currently being developed. Check back soon for updates." styleClass="hero-subtitle" wrapText="true" />
+            </VBox>
+
+            <VBox fx:id="eloOverlay" visible="false" managed="false" alignment="CENTER" styleClass="overlay-background">
+                <VBox maxWidth="650.0" spacing="20.0" styleClass="content-card">
+                    <padding>
+                        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+                    </padding>
+
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="MerStats TrueRank Engine" styleClass="hero-header" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <Button fx:id="btnCloseOverlay" text="✕" styleClass="close-button" />
+                    </HBox>
+
+                    <Label text="How the 2v2 Elo Algorithm Works" styleClass="about-role" />
+
+                    <Label text="Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.&#10;&#10;1. Alliance Averaging:&#10;Instead of treating every match equally, the engine calculates the average Elo rating for both the Red and Blue alliances.&#10;&#10;2. Expected Probability:&#10;Using advanced Elo mathematics, the engine calculates the exact statistical probability of one alliance beating the other.&#10;&#10;3. Dynamic Shifts:&#10;If a rookie alliance upsets a veteran alliance, it is a massive anomaly, and they steal a huge amount of MMR points. If a World Champion beats a beginner, they gain almost zero points because it was statistically expected.&#10;&#10;Every team starts at 1500.0. When you click Load, the engine replays the entire tournament chronologically, simulating every match to expose who was carried, and who the true best teams are." styleClass="about-bio" wrapText="true" />
+                </VBox>
             </VBox>
 
         </StackPane>

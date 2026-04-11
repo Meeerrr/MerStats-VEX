@@ -2,7 +2,7 @@
 /* GLOBAL APPLICATION STYLING                 */
 /* ========================================== */
 .root {
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-family: "Segoe UI", "Segoe UI Emoji", Helvetica, Arial, sans-serif;
 }
 
 .main-container {
@@ -232,11 +232,11 @@
 /* ========================================== */
 /* TRUERANK MMR TIERS (LEADERBOARD)           */
 /* ========================================== */
-.tier-dome { -fx-text-fill: #f59e0b; -fx-font-weight: 900; -fx-font-size: 15px; } /* Amber/Gold for Top 100 */
-.tier-titanium { -fx-text-fill: #6366f1; -fx-font-weight: 800; } /* Indigo */
-.tier-carbon { -fx-text-fill: #0f172a; -fx-font-weight: 800; }  /* Slate Black */
-.tier-aluminum { -fx-text-fill: #64748b; -fx-font-weight: 700; } /* Standard Gray */
-.tier-steel { -fx-text-fill: #94a3b8; -fx-font-weight: 600; }   /* Light Gray */
+.tier-dome { -fx-text-fill: #f59e0b; -fx-font-weight: 900; -fx-font-size: 15px; }
+.tier-titanium { -fx-text-fill: #6366f1; -fx-font-weight: 800; }
+.tier-carbon { -fx-text-fill: #0f172a; -fx-font-weight: 800; }
+.tier-aluminum { -fx-text-fill: #64748b; -fx-font-weight: 700; }
+.tier-steel { -fx-text-fill: #94a3b8; -fx-font-weight: 600; }
 
 /* ========================================== */
 /* ABOUT ME & SYSTEM PAGES                    */
@@ -266,4 +266,24 @@
 }
 .social-button:hover {
     -fx-background-color: #e2e8f0;
+}
+
+/* ========================================== */
+/* IN-APP OVERLAY STYLING (NEW)               */
+/* ========================================== */
+.overlay-background {
+    -fx-background-color: rgba(15, 23, 42, 0.7); /* Dark slate background with 70% opacity */
+}
+
+.close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 0 5px;
+}
+
+.close-button:hover {
+    -fx-text-fill: #ef4444; /* Turns red when hovered */
 }
