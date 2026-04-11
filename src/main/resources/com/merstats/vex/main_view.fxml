@@ -14,7 +14,6 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.control.ComboBox?>
 
 <BorderPane prefHeight="760.0" prefWidth="1150.0" styleClass="main-container" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.merstats.vex.ui.MainController">
     <left>
@@ -47,7 +46,6 @@
 
             <Label text="SYSTEM" styleClass="nav-section-header" />
             <Label fx:id="btnAbout" text="👤  About Me" styleClass="nav-link" />
-
             <Label fx:id="btnSettings" text="⚙  Settings" styleClass="nav-link" />
 
             <Region VBox.vgrow="ALWAYS" />
@@ -120,17 +118,28 @@
                     <Label text="Right-click any team for quick actions and deep telemetry." styleClass="hero-subtitle" wrapText="true" />
                 </VBox>
 
-                <HBox alignment="CENTER" spacing="15.0">
-                    <Button fx:id="btnLoadLeaderboard" text="Load Event Leaderboard" styleClass="center-search-button" />
+                <HBox alignment="CENTER" spacing="12.0">
 
                     <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" prefWidth="250.0">
+                        <TextField fx:id="eventSkuInput" HBox.hgrow="ALWAYS" promptText="Paste Event Link or SKU..." styleClass="center-search-input" />
+                    </HBox>
+
+                    <Button fx:id="btnLoadLeaderboard" text="Load Event" styleClass="center-search-button" />
+
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" prefWidth="200.0">
                         <TextField fx:id="lbSearchInput" HBox.hgrow="ALWAYS" promptText="Filter by Team..." styleClass="center-search-input" />
                     </HBox>
 
                     <Button fx:id="btnHowItWorks" text="ⓘ How it Works" styleClass="social-button" />
-
-                    <ProgressBar fx:id="lbLoadingBar" prefWidth="150.0" progress="-1.0" visible="false" styleClass="loading-bar"/>
                 </HBox>
+
+                <ProgressBar fx:id="lbLoadingBar" prefWidth="850.0" progress="-1.0" visible="false" styleClass="loading-bar">
+                    <VBox.margin>
+                        <Insets top="-10.0" bottom="-10.0"/>
+                    </VBox.margin>
+                </ProgressBar>
 
                 <TableView fx:id="leaderboardTable" VBox.vgrow="ALWAYS" prefWidth="850.0">
                     <columns>
@@ -186,7 +195,7 @@
 
                     <Label text="How the 2v2 Elo Algorithm Works" styleClass="about-role" />
 
-                    <Label text="Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.&#10;&#10;1. Alliance Averaging:&#10;Instead of treating every match equally, the engine calculates the average Elo rating for both the Red and Blue alliances.&#10;&#10;2. Expected Probability:&#10;Using advanced Elo mathematics, the engine calculates the exact statistical probability of one alliance beating the other.&#10;&#10;3. Dynamic Shifts:&#10;If a rookie alliance upsets a veteran alliance, it is a massive anomaly, and they steal a huge amount of MMR points. If a World Champion beats a beginner, they gain almost zero points because it was statistically expected.&#10;&#10;Every team starts at 1500.0. When you click Load, the engine replays the entire tournament chronologically, simulating every match to expose who was carried, and who the true best teams are." styleClass="about-bio" wrapText="true" />
+                    <Label text="Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.&#10;&#10;1. Alliance Averaging:&#10;Instead of treating every match equally, the engine calculates the average Elo rating for both the Red and Blue alliances.&#10;&#10;2. Expected Probability:&#10;Using advanced Elo mathematics, the engine calculates the exact statistical probability of one alliance beating the other.&#10;&#10;3. Dynamic Shifts:&#10;If a rookie alliance upsets a veteran alliance, it is a massive anomaly, and they steal a huge amount of MMR points. If a World Champion beats a beginner, they gain almost zero points because it was statistically expected.&#10;&#10;Every team starts at 1500.0. When you click Load, the engine replays the entire tournament chronologically, simulating every match to expose who was carried, and who the best teams are." styleClass="about-bio" wrapText="true" />
                 </VBox>
             </VBox>
 

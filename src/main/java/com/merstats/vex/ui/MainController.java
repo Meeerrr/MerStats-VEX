@@ -28,6 +28,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainController {
 
@@ -47,7 +49,6 @@ public class MainController {
     @FXML private VBox placeholderCard;
     @FXML private Label placeholderTitle;
 
-    // --- NEW IN-APP OVERLAY ELEMENTS ---
     @FXML private VBox eloOverlay;
     @FXML private Button btnCloseOverlay;
 
@@ -69,6 +70,7 @@ public class MainController {
 
     @FXML private Button btnLoadLeaderboard;
     @FXML private TextField lbSearchInput;
+    @FXML private TextField eventSkuInput;
     @FXML private Button btnHowItWorks;
     @FXML private ProgressBar lbLoadingBar;
     @FXML private TableView<SeasonRanking> leaderboardTable;
@@ -86,7 +88,8 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
-    private static final String TARGET_EVENT_SKU = "RE-VRC-23-3690";
+    // The Ultimate Default Fallback (2024 VEX Worlds)
+    private static final String DEFAULT_EVENT_SKU = "RE-VRC-23-3690";
 
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
 
@@ -99,7 +102,6 @@ public class MainController {
         searchButton.setOnAction(event -> handleSearch());
         btnLoadLeaderboard.setOnAction(event -> loadLeaderboardData());
 
-        // --- Overlay Interactions ---
         btnHowItWorks.setOnAction(event -> showEloExplanation());
         btnCloseOverlay.setOnAction(event -> hideEloExplanation());
 
@@ -158,7 +160,7 @@ public class MainController {
         lbTeamCol.setPrefWidth(220.0);
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        leaderboardPlaceholder = new Label("Click 'Load' to sequence match schedules and build MMR standings.");
+        leaderboardPlaceholder = new Label("Click 'Load Event' to sequence match schedules and build MMR standings.");
         leaderboardPlaceholder.getStyleClass().add("placeholder-label");
         leaderboardTable.setPlaceholder(leaderboardPlaceholder);
 
@@ -180,15 +182,21 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
 
-                    if (globalRank <= 100) {
+                    // --- DYNAMIC 7% PERCENTILE LOGIC ---
+                    int totalTeams = getTableView().getItems().size();
+                    // Calculate top 7% and use Math.ceil to round up (e.g. 7% of 40 = 2.8 -> Top 3 teams)
+                    int domeThreshold = (int) Math.ceil(totalTeams * 0.07);
+
+                    // Ensure at least the #1 team gets it, even in a tiny tournament
+                    if (totalTeams > 0 && globalRank <= Math.max(1, domeThreshold)) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
                     } else if (mmr >= 1600.0) {
                         getStyleClass().add("tier-titanium");
-                        setText("⚙️ Titanium (" + mmr + ")");
+                        setText("💠 Titanium (" + mmr + ")");
                     } else if (mmr >= 1550.0) {
                         getStyleClass().add("tier-carbon");
-                        setText("🦾 Carbon Fiber (" + mmr + ")");
+                        setText("⚡ Carbon Fiber (" + mmr + ")");
                     } else if (mmr >= 1500.0) {
                         getStyleClass().add("tier-aluminum");
                         setText("🔧 Aluminum (" + mmr + ")");
@@ -339,9 +347,23 @@ public class MainController {
         masterLeaderboardData.clear();
         lbSearchInput.clear();
 
+        String rawInput = eventSkuInput.getText().trim();
+        String finalSku = DEFAULT_EVENT_SKU;
+
+        if (!rawInput.isEmpty()) {
+            Matcher m = Pattern.compile("RE-[A-Za-z0-9]+-[0-9]+-[0-9]+").matcher(rawInput);
+            if (m.find()) {
+                finalSku = m.group();
+            } else {
+                finalSku = rawInput;
+            }
+        }
+
+        final String apiTarget = finalSku;
+
         CompletableFuture.supplyAsync(() -> {
             try {
-                return apiService.getProcessedEloRankings(TARGET_EVENT_SKU);
+                return apiService.getProcessedEloRankings(apiTarget);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -368,7 +390,7 @@ public class MainController {
                     fade.play();
 
                 } else {
-                    leaderboardPlaceholder.setText("Error: Failed to fetch ranking data. Please verify the SKU.");
+                    leaderboardPlaceholder.setText("Error: Failed to fetch ranking data. Please verify the URL or SKU.");
                 }
             });
         });
@@ -484,7 +506,6 @@ public class MainController {
         });
     }
 
-    // --- CHANGED: Replaced the OS Alert with a sleek in-app overlay animation ---
     private void showEloExplanation() {
         eloOverlay.setOpacity(0.0);
         eloOverlay.setVisible(true);
