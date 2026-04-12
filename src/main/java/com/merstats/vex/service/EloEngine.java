@@ -40,6 +40,7 @@ public class EloEngine {
                 int redScore = redAlliance.path("score").asInt();
                 int blueScore = blueAlliance.path("score").asInt();
 
+                // Ignore matches that haven't been played yet
                 if (redScore == 0 && blueScore == 0) continue;
 
                 String red1 = getTeamCode(redAlliance, 0);
@@ -66,8 +67,21 @@ public class EloEngine {
                 double actualRed = (redScore > blueScore) ? 1.0 : (blueScore > redScore ? 0.0 : 0.5);
                 double actualBlue = 1.0 - actualRed;
 
-                double redShift = K_FACTOR * (actualRed - expectedRed);
-                double blueShift = K_FACTOR * (actualBlue - expectedBlue);
+                // --- NEW: Normalized Margin of Victory (NMoV) ---
+                double totalScore = redScore + blueScore;
+                double movMultiplier = 1.0; // Default to 1.0x for ties or low-data matches
+
+                if (totalScore > 0) {
+                    // Calculates the percentage of dominance (e.g., 0.33 for a 33% blowout)
+                    double marginPercent = (double) Math.abs(redScore - blueScore) / totalScore;
+
+                    // Scales the multiplier from 1.0x (a tie) to a theoretical maximum of 2.0x (a total shutout)
+                    movMultiplier = 1.0 + marginPercent;
+                }
+
+                // Apply the season-agnostic multiplier to the final shifts
+                double redShift = K_FACTOR * (actualRed - expectedRed) * movMultiplier;
+                double blueShift = K_FACTOR * (actualBlue - expectedBlue) * movMultiplier;
 
                 for (SeasonRanking t : redTeams) t.setEloScore(t.getEloScore() + redShift);
                 for (SeasonRanking t : blueTeams) t.setEloScore(t.getEloScore() + blueShift);

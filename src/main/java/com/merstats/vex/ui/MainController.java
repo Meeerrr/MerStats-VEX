@@ -88,7 +88,6 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
-    // The Ultimate Default Fallback (2024 VEX Worlds)
     private static final String DEFAULT_EVENT_SKU = "RE-VRC-23-3690";
 
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
@@ -182,12 +181,9 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
 
-                    // --- DYNAMIC 7% PERCENTILE LOGIC ---
                     int totalTeams = getTableView().getItems().size();
-                    // Calculate top 7% and use Math.ceil to round up (e.g. 7% of 40 = 2.8 -> Top 3 teams)
                     int domeThreshold = (int) Math.ceil(totalTeams * 0.07);
 
-                    // Ensure at least the #1 team gets it, even in a tiny tournament
                     if (totalTeams > 0 && globalRank <= Math.max(1, domeThreshold)) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
@@ -507,6 +503,20 @@ public class MainController {
     }
 
     private void showEloExplanation() {
+        Label explanationLabel = (Label) ((VBox) eloOverlay.getChildren().get(0)).getChildren().get(2);
+
+        // --- NEW: Added explanation of Normalized Margin of Victory ---
+        explanationLabel.setText(
+                "Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.\n\n" +
+                        "1. Alliance Averaging:\n" +
+                        "Instead of treating every match equally, the engine calculates the average Elo rating for both the Red and Blue alliances.\n\n" +
+                        "2. Expected Probability:\n" +
+                        "Using advanced Elo mathematics, the engine calculates the exact statistical probability of one alliance beating the other.\n\n" +
+                        "3. Normalized Margin of Victory:\n" +
+                        "A 1-point win is very different from a 50-point blowout. The engine calculates the percentage difference in score to reward total dominance. Because it uses percentages instead of absolute points, the math works perfectly across different high-scoring or low-scoring seasons.\n\n" +
+                        "Every team starts at 1500.0. When you click Load, the engine replays the entire tournament chronologically to expose who was carried, and who the true best teams are."
+        );
+
         eloOverlay.setOpacity(0.0);
         eloOverlay.setVisible(true);
         eloOverlay.setManaged(true);
