@@ -10,15 +10,17 @@ import java.util.Map;
 
 public class EloEngine {
 
-    private static final double K_FACTOR = 32.0;
     private static final double BASE_ELO = 1500.0;
 
     public static void calculateTrueRank(List<SeasonRanking> teams, JsonNode matchArray) {
 
         Map<String, SeasonRanking> teamMap = new HashMap<>();
+        Map<String, Integer> matchCounts = new HashMap<>();
+
         for (SeasonRanking team : teams) {
             team.setEloScore(BASE_ELO);
             teamMap.put(team.getTeamNumber(), team);
+            matchCounts.put(team.getTeamNumber(), 0);
         }
 
         if (matchArray != null && matchArray.isArray()) {
@@ -40,7 +42,7 @@ public class EloEngine {
                 int redScore = redAlliance.path("score").asInt();
                 int blueScore = blueAlliance.path("score").asInt();
 
-                // Ignore matches that haven't been played yet
+                // Ignore unplayed matches
                 if (redScore == 0 && blueScore == 0) continue;
 
                 String red1 = getTeamCode(redAlliance, 0);
@@ -58,6 +60,7 @@ public class EloEngine {
 
                 if (redTeams.isEmpty() || blueTeams.isEmpty()) continue;
 
+                // --- 1. ALLIANCE AVERAGING ---
                 double redAvgElo = redTeams.stream().mapToDouble(SeasonRanking::getEloScore).average().orElse(BASE_ELO);
                 double blueAvgElo = blueTeams.stream().mapToDouble(SeasonRanking::getEloScore).average().orElse(BASE_ELO);
 
@@ -67,26 +70,60 @@ public class EloEngine {
                 double actualRed = (redScore > blueScore) ? 1.0 : (blueScore > redScore ? 0.0 : 0.5);
                 double actualBlue = 1.0 - actualRed;
 
-                // --- NEW: Normalized Margin of Victory (NMoV) ---
+                // --- 2. STACKED MULTIPLIERS ---
+
+                // A) Normalized Margin of Victory (NMoV)
                 double totalScore = redScore + blueScore;
-                double movMultiplier = 1.0; // Default to 1.0x for ties or low-data matches
-
+                double movMultiplier = 1.0;
                 if (totalScore > 0) {
-                    // Calculates the percentage of dominance (e.g., 0.33 for a 33% blowout)
                     double marginPercent = (double) Math.abs(redScore - blueScore) / totalScore;
-
-                    // Scales the multiplier from 1.0x (a tie) to a theoretical maximum of 2.0x (a total shutout)
                     movMultiplier = 1.0 + marginPercent;
                 }
 
-                // Apply the season-agnostic multiplier to the final shifts
-                double redShift = K_FACTOR * (actualRed - expectedRed) * movMultiplier;
-                double blueShift = K_FACTOR * (actualBlue - expectedBlue) * movMultiplier;
+                // B) Elimination Bracket Stakes (Rounds > 2 are Eliminations)
+                int round = match.path("round").asInt(2);
+                double elimMultiplier = (round > 2) ? 1.5 : 1.0;
 
-                for (SeasonRanking t : redTeams) t.setEloScore(t.getEloScore() + redShift);
-                for (SeasonRanking t : blueTeams) t.setEloScore(t.getEloScore() + blueShift);
+                // C) Autonomous Filter (Safely reads the score breakdown if available)
+                double autoRedMultiplier = 1.0;
+                double autoBlueMultiplier = 1.0;
+                JsonNode scoreBreakdown = match.path("score_breakdown");
+                if (!scoreBreakdown.isMissingNode()) {
+                    String autoWinner = scoreBreakdown.path("autonomous").asText("");
+                    if (autoWinner.equals("red")) autoRedMultiplier = 1.15;
+                    if (autoWinner.equals("blue")) autoBlueMultiplier = 1.15;
+                }
+
+                // Compile Final Multipliers
+                double baseRedShift = (actualRed - expectedRed) * movMultiplier * elimMultiplier * autoRedMultiplier;
+                double baseBlueShift = (actualBlue - expectedBlue) * movMultiplier * elimMultiplier * autoBlueMultiplier;
+
+                // --- 3. K-FACTOR DECAY & APPLICATION ---
+                for (SeasonRanking t : redTeams) {
+                    String id = t.getTeamNumber();
+                    int matchesPlayed = matchCounts.get(id);
+                    matchCounts.put(id, matchesPlayed + 1);
+
+                    double activeK = getDynamicKFactor(matchesPlayed);
+                    t.setEloScore(t.getEloScore() + (activeK * baseRedShift));
+                }
+
+                for (SeasonRanking t : blueTeams) {
+                    String id = t.getTeamNumber();
+                    int matchesPlayed = matchCounts.get(id);
+                    matchCounts.put(id, matchesPlayed + 1);
+
+                    double activeK = getDynamicKFactor(matchesPlayed);
+                    t.setEloScore(t.getEloScore() + (activeK * baseBlueShift));
+                }
             }
         }
+    }
+
+    private static double getDynamicKFactor(int matchesPlayed) {
+        if (matchesPlayed <= 3) return 64.0;  // Highly volatile provisional rating
+        if (matchesPlayed <= 7) return 32.0;  // Standard tuning
+        return 16.0;                          // Confirmed stable rating
     }
 
     private static String getTeamCode(JsonNode allianceNode, int index) {

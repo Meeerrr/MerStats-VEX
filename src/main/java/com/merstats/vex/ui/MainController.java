@@ -74,7 +74,7 @@ public class MainController {
     @FXML private Button btnHowItWorks;
     @FXML private ProgressBar lbLoadingBar;
 
-    @FXML private Label leaderboardTitle; // NEW: Controls the header title dynamically
+    @FXML private Label leaderboardTitle;
 
     @FXML private TableView<SeasonRanking> leaderboardTable;
     @FXML private TableColumn<SeasonRanking, Integer> lbRankCol;
@@ -345,8 +345,6 @@ public class MainController {
 
         masterLeaderboardData.clear();
         lbSearchInput.clear();
-
-        // --- NEW: Change title to loading state ---
         leaderboardTitle.setText("Extracting Event Data...");
 
         String rawInput = eventSkuInput.getText().trim();
@@ -365,13 +363,8 @@ public class MainController {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                // --- NEW: Fetch the event name dynamically ---
                 String fetchedName = apiService.getEventNameBySku(apiTarget);
-
-                // Update the UI immediately so the user knows what event they loaded
                 Platform.runLater(() -> leaderboardTitle.setText(fetchedName));
-
-                // Proceed with the heavy math processing
                 return apiService.getProcessedEloRankings(apiTarget);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -400,7 +393,7 @@ public class MainController {
 
                 } else {
                     leaderboardPlaceholder.setText("Error: Failed to fetch ranking data. Please verify the URL or SKU.");
-                    leaderboardTitle.setText("Global TrueRank Leaderboard"); // Revert if failed
+                    leaderboardTitle.setText("Global TrueRank Leaderboard");
                 }
             });
         });
@@ -517,6 +510,20 @@ public class MainController {
     }
 
     private void showEloExplanation() {
+        Label explanationLabel = (Label) ((VBox) eloOverlay.getChildren().get(0)).getChildren().get(2);
+
+        explanationLabel.setText(
+                "Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.\n\n" +
+                        "1. Alliance Averaging:\n" +
+                        "The engine calculates the average Elo rating for both the Red and Blue alliances to determine statistical win probability. If a rookie alliance upsets a veteran alliance, they steal a huge amount of MMR points.\n\n" +
+                        "2. Normalized Margin of Victory:\n" +
+                        "A 1-point win is very different from a 50-point blowout. The engine calculates the percentage difference in score to reward total dominance across any season.\n\n" +
+                        "3. K-Factor Decay:\n" +
+                        "Teams are tracked individually. A robot playing its 2nd match has high volatility (K=64), allowing them to climb quickly. By their 9th match, their rating stabilizes (K=16), filtering out late-tournament flukes.\n\n" +
+                        "4. Elimination Stakes & Auto Filter:\n" +
+                        "Matches played in the Elimination Bracket are multiplied by 1.5x to reward clutch performance. Alliances that win the Autonomous period receive an additional 1.15x multiplier to isolate mechanical coding superiority."
+        );
+
         eloOverlay.setOpacity(0.0);
         eloOverlay.setVisible(true);
         eloOverlay.setManaged(true);

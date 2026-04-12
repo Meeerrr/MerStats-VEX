@@ -53,7 +53,6 @@ public class RobotEventsService {
         return null;
     }
 
-    // --- NEW: Helper method to extract the clean Event Name ---
     public String getEventNameBySku(String sku) throws Exception {
         String eventUrl = BASE_URL + "/events?sku%5B%5D=" + sku;
         HttpRequest eventRequest = HttpRequest.newBuilder()
@@ -72,7 +71,7 @@ public class RobotEventsService {
                 return dataArray.get(0).path("name").asText();
             }
         }
-        return "Custom Event Leaderboard"; // Safe fallback
+        return "Custom Event Leaderboard";
     }
 
     public List<SeasonRanking> getProcessedEloRankings(String sku) throws Exception {
