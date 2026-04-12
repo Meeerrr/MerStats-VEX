@@ -521,7 +521,9 @@ public class MainController {
                         "3. K-Factor Decay:\n" +
                         "Teams are tracked individually. A robot playing its 2nd match has high volatility (K=64), allowing them to climb quickly. By their 9th match, their rating stabilizes (K=16), filtering out late-tournament flukes.\n\n" +
                         "4. Elimination Stakes & Auto Filter:\n" +
-                        "Matches played in the Elimination Bracket are multiplied by 1.5x to reward clutch performance. Alliances that win the Autonomous period receive an additional 1.15x multiplier to isolate mechanical coding superiority."
+                        "Matches played in the Elimination Bracket are multiplied by 1.5x to reward clutch performance. Alliances that win the Autonomous period receive an additional 1.15x multiplier to isolate mechanical coding superiority.\n\n" +
+                        "5. Multi-Pass Iteration:\n" +
+                        "To ensure early qualification matches are scored fairly, the engine simulates the entire tournament three times in a row. It learns who the true best teams are in Pass 1, and retroactively applies that knowledge to Pass 2 and 3 for absolute mathematical precision."
         );
 
         eloOverlay.setOpacity(0.0);
