@@ -114,7 +114,7 @@
                 </padding>
 
                 <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="Global TrueRank Leaderboard" styleClass="hero-header" />
+                    <Label fx:id="leaderboardTitle" text="Global TrueRank Leaderboard" styleClass="hero-header" />
                     <Label text="Right-click any team for quick actions and deep telemetry." styleClass="hero-subtitle" wrapText="true" />
                 </VBox>
 
