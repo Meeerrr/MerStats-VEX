@@ -18,7 +18,11 @@ def calculate_truerank(teams_list, match_list):
     # Initialize our "Global Memory" dictionary
     global_memory = {}
     for team in teams_list:
-        team_id = team.get("number", "Unknown")
+        # NEW: Safely grab the team number, skip if it's broken/missing
+        team_id = team.get("number")
+        if not team_id:
+            continue
+
         global_memory[team_id] = {
             "team_id": team_id,
             "elo_score": BASE_ELO,
