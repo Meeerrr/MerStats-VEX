@@ -19,7 +19,7 @@ def calculate_truerank(teams_list, match_list):
     global_memory = {}
     for team in teams_list:
         # NEW: Safely grab the team number, skip if it's broken/missing
-        team_id = team.get("number")
+        team_id = team.get("name") or team.get("code") or team.get("number")
         if not team_id:
             continue
 

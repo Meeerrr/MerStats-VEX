@@ -63,7 +63,7 @@ def run_worker():
     seen_teams = set()
 
     for t in all_teams:
-        t_id = t.get("number")
+        t_id = t.get("name") or t.get("code") or t.get("number")
         # Ignore broken data or duplicates
         if not t_id or t_id in seen_teams:
             continue
