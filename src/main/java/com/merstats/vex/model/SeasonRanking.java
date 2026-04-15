@@ -7,6 +7,7 @@ public class SeasonRanking {
 
     private VexTeam team;
     private VexEventInfo event;
+    private String teamName;
     private int rank;
     private int wins;
     private int losses;
@@ -29,6 +30,14 @@ public class SeasonRanking {
 
     public VexTeam getTeam() { return team; }
     public void setTeam(VexTeam team) { this.team = team; }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
 
     public VexEventInfo getEvent() { return event; }
     public void setEvent(VexEventInfo event) { this.event = event; }
