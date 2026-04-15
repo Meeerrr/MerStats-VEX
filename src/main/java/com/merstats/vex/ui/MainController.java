@@ -68,6 +68,7 @@ public class MainController {
         setupEventTable();
 
         // Populate all seasons in order from newest to oldest
+        seasonMap.put("Push Back (25-26)", 199); // Added the current active season!
         seasonMap.put("High Stakes (24-25)", 190);
         seasonMap.put("Over Under (23-24)", 181);
         seasonMap.put("Spin Up (22-23)", 173);
@@ -308,9 +309,9 @@ public class MainController {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                // Instantly grabs the correct ID, defaults to 190 (High Stakes) if something goes wrong
                 String selectedSeason = seasonDropdown.getValue();
-                int seasonId = seasonMap.getOrDefault(selectedSeason, 190);
+                // We default to 199 for Push Back if something doesn't match perfectly
+                int seasonId = seasonMap.getOrDefault(selectedSeason, 199);
 
                 return apiService.getGlobalLeaderboard(seasonId);
             } catch (Exception e) {

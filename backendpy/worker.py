@@ -17,8 +17,8 @@ re_headers = {
     "Accept": "application/json"
 }
 
-# The complete array of historical seasons to process (From High Stakes down to Gateway)
-TARGET_SEASONS = [190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+# Added the 25-26 Push Back season (ID 199) to the front of the line!
+TARGET_SEASONS = [199, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def fetch_all_pages(base_url):
     results = []
