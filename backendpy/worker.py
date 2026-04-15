@@ -12,15 +12,15 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 ROBOT_EVENTS_KEY = os.environ.get("ROBOT_EVENTS_KEY")
 
-TARGET_SEASON_ID = 190
-
 re_headers = {
     "Authorization": f"Bearer {ROBOT_EVENTS_KEY}",
     "Accept": "application/json"
 }
 
+# The array of historical seasons to process
+TARGET_SEASONS = [173, 181, 190]
+
 def fetch_all_pages(base_url):
-    """Handles pagination safely and wears heavy armor against API crashes."""
     results = []
     current_page = 1
     last_page = 1
@@ -30,7 +30,6 @@ def fetch_all_pages(base_url):
         paginated_url = f"{base_url}{separator}page={current_page}"
 
         try:
-            # We also add a timeout, so if VEX freezes, our script doesn't hang forever
             res = requests.get(paginated_url, headers=re_headers, timeout=15)
 
             if res.status_code == 429:
@@ -38,13 +37,11 @@ def fetch_all_pages(base_url):
                 time.sleep(5)
                 continue
 
-            # NEW: If VEX returns a 500 Internal Server Error or 502 Bad Gateway
             if res.status_code != 200:
                 print(f"\n⚠️ API Error {res.status_code}. Skipping page {current_page}...")
                 current_page += 1
                 continue
 
-            # NEW: Safely attempt to parse the JSON
             data = res.json()
             if 'data' in data:
                 results.extend(data['data'])
@@ -63,7 +60,7 @@ def fetch_all_pages(base_url):
             print(f"\n⚠️ Network disconnected. Skipping page {current_page}...")
             current_page += 1
 
-    print() # Move to the next line when done
+    print()
     return results
 
 def upload_in_batches(endpoint, payload, headers, batch_size=1000):
@@ -76,77 +73,78 @@ def upload_in_batches(endpoint, payload, headers, batch_size=1000):
             print(f"   -> ❌ Batch failed: {res.text}")
 
 def run_worker():
-    print(f"🤖 Starting Full Season TrueRank Pipeline for Season: {TARGET_SEASON_ID}")
-
     if not ROBOT_EVENTS_KEY or not SUPABASE_URL:
         print("❌ ERROR: Keys are missing! Check your .env file.")
         return
 
-    # --- 2. FETCH ALL EVENTS ---
-    print("📡 Fetching event manifest for the season", end=" ")
-    events_url = f"https://www.robotevents.com/api/v2/events?season[]={TARGET_SEASON_ID}&per_page=250"
-    all_events = fetch_all_pages(events_url)
+    print(f"🤖 Starting Historical TrueRank Pipeline for {len(TARGET_SEASONS)} seasons...")
 
-    today = datetime.now().strftime('%Y-%m-%d')
-    past_events = [e for e in all_events if e.get('start', '')[:10] < today]
-    print(f"✅ Found {len(past_events)} completed events.\n")
+    for season_id in TARGET_SEASONS:
+        print(f"\n==================================================")
+        print(f"📅 COMMENCING PROCESSING FOR SEASON ID: {season_id}")
+        print(f"==================================================")
 
-    all_teams = []
-    all_matches = []
+        print("📡 Fetching event manifest...", end=" ")
+        events_url = f"https://www.robotevents.com/api/v2/events?season[]={season_id}&per_page=250"
+        all_events = fetch_all_pages(events_url)
 
-    # --- 3. EXTRACT MATCHES ---
-    for idx, event in enumerate(past_events):
-        event_id = event['id']
-        sku = event.get('sku')
-        print(f"[{idx+1}/{len(past_events)}] Extracting: {sku}")
+        today = datetime.now().strftime('%Y-%m-%d')
+        past_events = [e for e in all_events if e.get('start', '')[:10] < today]
+        print(f"✅ Found {len(past_events)} completed events.\n")
 
-        for div in event.get('divisions', []):
-            div_id = div['id']
+        all_teams = []
+        all_matches = []
 
-            print("   ↳ Downloading Roster: ", end="", flush=True)
-            rank_url = f"https://www.robotevents.com/api/v2/events/{event_id}/divisions/{div_id}/rankings?per_page=250"
-            all_teams.extend([r["team"] for r in fetch_all_pages(rank_url)])
+        for idx, event in enumerate(past_events):
+            event_id = event['id']
+            sku = event.get('sku')
+            print(f"[{idx+1}/{len(past_events)}] Extracting: {sku}")
 
-            print("   ↳ Downloading Matches: ", end="", flush=True)
-            match_url = f"https://www.robotevents.com/api/v2/events/{event_id}/divisions/{div_id}/matches?per_page=250"
-            all_matches.extend(fetch_all_pages(match_url))
+            for div in event.get('divisions', []):
+                div_id = div['id']
 
-        time.sleep(0.5)
+                print("   ↳ Downloading Roster: ", end="", flush=True)
+                rank_url = f"https://www.robotevents.com/api/v2/events/{event_id}/divisions/{div_id}/rankings?per_page=250"
+                all_teams.extend([r["team"] for r in fetch_all_pages(rank_url)])
 
-    # --- 4. CRUNCH THE MATH ---
-    print(f"\n🧠 Extraction complete. Running TrueRank on {len(all_matches)} matches...")
-    final_elo_data = calculate_truerank(all_teams, all_matches)
+                print("   ↳ Downloading Matches: ", end="", flush=True)
+                match_url = f"https://www.robotevents.com/api/v2/events/{event_id}/divisions/{div_id}/matches?per_page=250"
+                all_matches.extend(fetch_all_pages(match_url))
 
-    for data in final_elo_data:
-        data["season_id"] = TARGET_SEASON_ID
+            time.sleep(3)
 
-    # --- 5. UPLOAD TO DATABASE ---
-    print("\n☁️ Connecting to Supabase...")
-    supabase_headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json",
-        "Prefer": "resolution=merge-duplicates"
-    }
+        print(f"\n🧠 Running TrueRank on {len(all_matches)} matches...")
+        final_elo_data = calculate_truerank(all_teams, all_matches)
 
-    print(f"☁️ Step 1/2: Pushing global roster ({len(all_teams)} raw teams found)...")
-    teams_payload = []
-    seen_teams = set()
-    for t in all_teams:
-        t_id = t.get("name") or t.get("code") or t.get("number")
-        if not t_id or t_id in seen_teams: continue
-        seen_teams.add(t_id)
-        teams_payload.append({
-            "id": t_id,
-            "team_name": t.get("team_name", t.get("name", "Unknown Name")),
-            "grade_level": t.get("grade", "Unknown Grade")
-        })
-    upload_in_batches(f"{SUPABASE_URL}/rest/v1/teams", teams_payload, supabase_headers)
+        for data in final_elo_data:
+            data["season_id"] = season_id
 
-    print(f"\n☁️ Step 2/2: Uploading {len(final_elo_data)} TrueRank records...")
-    upload_in_batches(f"{SUPABASE_URL}/rest/v1/global_truerank", final_elo_data, supabase_headers)
+        print("\n☁️ Connecting to Supabase...")
+        supabase_headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates"
+        }
 
-    print("\n✅ Success! Global Season Pipeline complete.")
+        print(f"☁️ Step 1/2: Pushing global roster...")
+        teams_payload = []
+        seen_teams = set()
+        for t in all_teams:
+            t_id = t.get("name") or t.get("code") or t.get("number")
+            if not t_id or t_id in seen_teams: continue
+            seen_teams.add(t_id)
+            teams_payload.append({
+                "id": t_id,
+                "team_name": t.get("team_name", t.get("name", "Unknown Name")),
+                "grade_level": t.get("grade", "Unknown Grade")
+            })
+        upload_in_batches(f"{SUPABASE_URL}/rest/v1/teams", teams_payload, supabase_headers)
+
+        print(f"\n☁️ Step 2/2: Uploading {len(final_elo_data)} TrueRank records for Season {season_id}...")
+        upload_in_batches(f"{SUPABASE_URL}/rest/v1/global_truerank", final_elo_data, supabase_headers)
+
+    print("\n✅ Success! All historical seasons processed successfully.")
 
 if __name__ == "__main__":
     run_worker()
