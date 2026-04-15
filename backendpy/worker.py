@@ -20,34 +20,48 @@ re_headers = {
 }
 
 def fetch_all_pages(base_url):
-    """Handles pagination safely by manually forcing the page number."""
+    """Handles pagination safely and wears heavy armor against API crashes."""
     results = []
     current_page = 1
     last_page = 1
 
     while current_page <= last_page:
-        # Force the page parameter so RobotEvents never drops our season filter
         separator = "&" if "?" in base_url else "?"
         paginated_url = f"{base_url}{separator}page={current_page}"
 
-        res = requests.get(paginated_url, headers=re_headers)
+        try:
+            # We also add a timeout, so if VEX freezes, our script doesn't hang forever
+            res = requests.get(paginated_url, headers=re_headers, timeout=15)
 
-        if res.status_code == 429:
-            print("\n⚠️ Rate limited! Sleeping for 5 seconds...")
-            time.sleep(5)
-            continue
+            if res.status_code == 429:
+                print("\n⚠️ Rate limited by VEX! Sleeping for 5 seconds...")
+                time.sleep(5)
+                continue
 
-        data = res.json()
-        if 'data' in data:
-            results.extend(data['data'])
+            # NEW: If VEX returns a 500 Internal Server Error or 502 Bad Gateway
+            if res.status_code != 200:
+                print(f"\n⚠️ API Error {res.status_code}. Skipping page {current_page}...")
+                current_page += 1
+                continue
 
-        # Update our target on the very first loop
-        meta = data.get('meta', {})
-        if current_page == 1:
-            last_page = meta.get('last_page', 1)
+            # NEW: Safely attempt to parse the JSON
+            data = res.json()
+            if 'data' in data:
+                results.extend(data['data'])
 
-        print("■", end="", flush=True)
-        current_page += 1
+            meta = data.get('meta', {})
+            if current_page == 1:
+                last_page = meta.get('last_page', 1)
+
+            print("■", end="", flush=True)
+            current_page += 1
+
+        except requests.exceptions.JSONDecodeError:
+            print(f"\n⚠️ VEX sent corrupted data. Skipping page {current_page}...")
+            current_page += 1
+        except requests.exceptions.RequestException as e:
+            print(f"\n⚠️ Network disconnected. Skipping page {current_page}...")
+            current_page += 1
 
     print() # Move to the next line when done
     return results
