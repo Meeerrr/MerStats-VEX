@@ -29,79 +29,63 @@ import java.util.concurrent.CompletableFuture;
 
 public class MainController {
 
-    // Nav Buttons
-    @FXML private Label btnDashboard;
-    @FXML private Label btnSkills;
-    @FXML private Label btnH2H;
-    @FXML private Label btnAwards;
-    @FXML private Label btnEvents;
-    @FXML private Label btnLeaderboards;
-    @FXML private Label btnAbout;
-    @FXML private Label btnSettings;
-
-    // View Cards
-    @FXML private VBox sidebar;
-    @FXML private VBox contentCard;
-    @FXML private VBox leaderboardCard;
-    @FXML private VBox eventCard;
-    @FXML private VBox aboutCard;
-    @FXML private VBox placeholderCard;
-    @FXML private Label placeholderTitle;
-
-    @FXML private VBox eloOverlay;
-    @FXML private Button btnCloseOverlay;
-    @FXML private Button btnGithub;
+    @FXML private Label btnDashboard, btnSkills, btnH2H, btnAwards, btnEvents, btnLeaderboards, btnAbout, btnSettings;
+    @FXML private VBox sidebar, contentCard, leaderboardCard, eventCard, aboutCard, placeholderCard, eloOverlay;
+    @FXML private Label placeholderTitle, dashboardTitle, dashboardSubtitle, leaderboardTitle;
+    @FXML private Button btnCloseOverlay, btnGithub, searchButton, btnLoadLeaderboard, btnHowItWorks, eventSearchButton;
     @FXML private ImageView mainLogo;
+    @FXML private TextField teamInput, lbSearchInput, eventInput;
+    @FXML private ProgressBar loadingBar, lbLoadingBar, eventLoadingBar;
+    @FXML private ComboBox<String> seasonDropdown;
 
-    // Dashboard Elements
-    @FXML private Label dashboardTitle;
-    @FXML private Label dashboardSubtitle;
-    @FXML private TextField teamInput;
-    @FXML private Button searchButton;
-    @FXML private ProgressBar loadingBar;
     @FXML private TableView<SkillsRanking> skillsTable;
-    @FXML private TableColumn<SkillsRanking, String> seasonCol;
-    @FXML private TableColumn<SkillsRanking, String> eventCol;
-    @FXML private TableColumn<SkillsRanking, String> typeCol;
-    @FXML private TableColumn<SkillsRanking, Integer> attemptCol;
-    @FXML private TableColumn<SkillsRanking, Integer> scoreCol;
-    @FXML private TableColumn<SkillsRanking, Integer> dashRankCol;
+    @FXML private TableColumn<SkillsRanking, String> seasonCol, eventCol, typeCol;
+    @FXML private TableColumn<SkillsRanking, Integer> attemptCol, scoreCol, dashRankCol;
 
-    // Leaderboard Elements
-    @FXML private Button btnLoadLeaderboard;
-    @FXML private TextField lbSearchInput;
-    @FXML private Button btnHowItWorks;
-    @FXML private ProgressBar lbLoadingBar;
-    @FXML private Label leaderboardTitle;
     @FXML private TableView<SeasonRanking> leaderboardTable;
     @FXML private TableColumn<SeasonRanking, Integer> lbRankCol;
-    @FXML private TableColumn<SeasonRanking, String> lbTeamCol;
-    @FXML private TableColumn<SeasonRanking, String> lbRecordCol;
+    @FXML private TableColumn<SeasonRanking, String> lbTeamCol, lbRecordCol;
     @FXML private TableColumn<SeasonRanking, Double> lbTrueRankCol;
 
-    // Event Statistics Elements
-    @FXML private TextField eventInput;
-    @FXML private Button eventSearchButton;
-    @FXML private ProgressBar eventLoadingBar;
     @FXML private TableView<SeasonRanking> eventTable;
     @FXML private TableColumn<SeasonRanking, Integer> evRankCol;
-    @FXML private TableColumn<SeasonRanking, String> evTeamCol;
-    @FXML private TableColumn<SeasonRanking, String> evRecordCol;
+    @FXML private TableColumn<SeasonRanking, String> evTeamCol, evRecordCol;
     @FXML private TableColumn<SeasonRanking, Double> evTrueRankCol;
 
-    private Label dashboardPlaceholder;
-    private Label leaderboardPlaceholder;
+    private Label dashboardPlaceholder, leaderboardPlaceholder;
     private final RobotEventsService apiService = new RobotEventsService();
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
-
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
+
+    // The Master Dictionary for all historical VEX seasons
+    private final java.util.Map<String, Integer> seasonMap = new java.util.LinkedHashMap<>();
 
     @FXML
     public void initialize() {
         setupDashboardTable();
         setupLeaderboardTable();
         setupEventTable();
+
+        // Populate all seasons in order from newest to oldest
+        seasonMap.put("High Stakes (24-25)", 190);
+        seasonMap.put("Over Under (23-24)", 181);
+        seasonMap.put("Spin Up (22-23)", 173);
+        seasonMap.put("Tipping Point (21-22)", 154);
+        seasonMap.put("Change Up (20-21)", 139);
+        seasonMap.put("Tower Takeover (19-20)", 130);
+        seasonMap.put("Turning Point (18-19)", 125);
+        seasonMap.put("In the Zone (17-18)", 119);
+        seasonMap.put("Starstruck (16-17)", 115);
+        seasonMap.put("Nothing But Net (15-16)", 110);
+        seasonMap.put("Skyrise (14-15)", 102);
+        seasonMap.put("Toss Up (13-14)", 92);
+        seasonMap.put("Sack Attack (12-13)", 85);
+        seasonMap.put("Gateway (11-12)", 73);
+
+        seasonDropdown.getItems().addAll(seasonMap.keySet());
+        seasonDropdown.getSelectionModel().selectFirst();
+        seasonDropdown.setOnAction(e -> loadLeaderboardData());
 
         setupSearchHistoryPopup();
         searchButton.setOnAction(event -> handleSearch());
@@ -141,7 +125,7 @@ public class MainController {
                         setStyle("-fx-text-fill: #00E676; -fx-font-weight: bold; -fx-alignment: center;");
                     } else {
                         setText(String.valueOf(rank));
-                        setStyle("-fx-alignment: center;"); // Keep standard numbers centered too!
+                        setStyle("-fx-alignment: center;");
                     }
                 }
             }
@@ -151,6 +135,7 @@ public class MainController {
         dashboardPlaceholder.getStyleClass().add("placeholder-label");
         skillsTable.setPlaceholder(dashboardPlaceholder);
     }
+
     private void setupLeaderboardTable() {
         lbRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
         lbTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamDisplay"));
@@ -159,8 +144,7 @@ public class MainController {
 
         lbTeamCol.setPrefWidth(220.0);
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        leaderboardPlaceholder = new Label("Click 'Refresh Leaderboard' to sync with MerStats Cloud.");
+        leaderboardPlaceholder = new Label("Select a season and sync with MerStats Cloud.");
         leaderboardPlaceholder.getStyleClass().add("placeholder-label");
         leaderboardTable.setPlaceholder(leaderboardPlaceholder);
 
@@ -232,7 +216,6 @@ public class MainController {
                     getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
                 } else {
                     getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
-
                     int eventRank = teamData.getRank();
 
                     if (eventRank == 1) {
@@ -279,21 +262,12 @@ public class MainController {
 
     private void switchView(VBox targetCard, Label activeNavLabel, String pageTitle) {
         if (activeNavLabel.getStyleClass().contains("nav-link-active")) return;
-
         VBox[] allCards = {contentCard, leaderboardCard, eventCard, aboutCard, placeholderCard};
-        for (VBox card : allCards) {
-            card.setVisible(false);
-            card.setManaged(false);
-        }
-
-        if (targetCard == placeholderCard) {
-            placeholderTitle.setText(pageTitle);
-        }
-
+        for (VBox card : allCards) { card.setVisible(false); card.setManaged(false); }
+        if (targetCard == placeholderCard) { placeholderTitle.setText(pageTitle); }
         targetCard.setVisible(true);
         targetCard.setManaged(true);
         playCardAnimation(targetCard);
-
         Label[] allNavs = {btnDashboard, btnSkills, btnH2H, btnAwards, btnEvents, btnLeaderboards, btnAbout, btnSettings};
         for (Label nav : allNavs) {
             nav.getStyleClass().remove("nav-link-active");
@@ -334,7 +308,11 @@ public class MainController {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                return apiService.getGlobalLeaderboard();
+                // Instantly grabs the correct ID, defaults to 190 (High Stakes) if something goes wrong
+                String selectedSeason = seasonDropdown.getValue();
+                int seasonId = seasonMap.getOrDefault(selectedSeason, 190);
+
+                return apiService.getGlobalLeaderboard(seasonId);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -350,7 +328,6 @@ public class MainController {
                         rankingsData.get(i).setRank(i + 1);
                     }
                     masterLeaderboardData.setAll(rankingsData);
-
                     leaderboardTable.setOpacity(0);
                     FadeTransition fade = new FadeTransition(Duration.millis(400), leaderboardTable);
                     fade.setToValue(1);
@@ -366,15 +343,14 @@ public class MainController {
         String input = eventInput.getText().trim();
         if (input.isEmpty()) return;
 
-        // Clean regex extraction: read 'input', output clean 'sku'
         String sku = input;
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("RE-[A-Za-z0-9]+-\\d{2}-\\d{4}").matcher(input);
         if (m.find()) {
             sku = m.group();
-            eventInput.setText(sku); // Update the text box to look clean!
+            eventInput.setText(sku);
         }
 
-        final String targetSku = sku; // Must be final for the async thread
+        final String targetSku = sku;
 
         eventSearchButton.setDisable(true);
         eventSearchButton.setText("Analyzing...");
@@ -382,12 +358,8 @@ public class MainController {
         eventTable.getItems().clear();
 
         CompletableFuture.supplyAsync(() -> {
-            try {
-                return apiService.getEventTrueRank(targetSku);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return null;
-            }
+            try { return apiService.getEventTrueRank(targetSku); }
+            catch (Exception ex) { ex.printStackTrace(); return null; }
         }).thenAccept(eventRankings -> {
             Platform.runLater(() -> {
                 eventSearchButton.setDisable(false);
@@ -399,7 +371,6 @@ public class MainController {
                         eventRankings.get(i).setRank(i + 1);
                     }
                     eventTable.getItems().setAll(eventRankings);
-
                     eventTable.setOpacity(0);
                     FadeTransition fade = new FadeTransition(Duration.millis(400), eventTable);
                     fade.setToValue(1);
@@ -435,21 +406,17 @@ public class MainController {
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
                 if (team != null) {
                     Double globalElo = apiService.getTeamGlobalElo(team.getResolvedNumber());
-
                     Platform.runLater(() -> {
                         dashboardTitle.setText("Team " + team.getResolvedNumber() + " - " + team.getResolvedName());
-
                         dashboardSubtitle.getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
 
                         if (globalElo != null) {
                             String tierText = "🔩 Steel";
                             String styleClass = "tier-steel";
-
                             if (globalElo >= 2000.0) { tierText = "⭐ The Dome"; styleClass = "tier-dome"; }
                             else if (globalElo >= 1900.0) { tierText = "💠 Titanium"; styleClass = "tier-titanium"; }
                             else if (globalElo >= 1700.0) { tierText = "⚡ Carbon Fiber"; styleClass = "tier-carbon"; }
                             else if (globalElo >= 1500.0) { tierText = "🔧 Aluminum"; styleClass = "tier-aluminum"; }
-
                             dashboardSubtitle.setText("Grade: " + team.getGrade() + "   •   " + tierText + " (" + globalElo + ")");
                             dashboardSubtitle.getStyleClass().add(styleClass);
                         } else {
@@ -485,7 +452,6 @@ public class MainController {
                         return Integer.compare(rank2.getScore(), rank1.getScore());
                     });
                     skillsTable.getItems().setAll(skillsData);
-
                     skillsTable.setOpacity(0.0);
                     skillsTable.setTranslateY(20.0);
                     FadeTransition tableFade = new FadeTransition(Duration.millis(600), skillsTable);
@@ -508,10 +474,7 @@ public class MainController {
                 historyMenu.getItems().clear();
                 for (String search : recentSearches) {
                     MenuItem item = new MenuItem(search);
-                    item.setOnAction(e -> {
-                        teamInput.setText(search);
-                        handleSearch();
-                    });
+                    item.setOnAction(e -> { teamInput.setText(search); handleSearch(); });
                     historyMenu.getItems().add(item);
                 }
                 historyMenu.show(teamInput, javafx.geometry.Side.BOTTOM, 0, 0);
@@ -528,29 +491,21 @@ public class MainController {
     }
 
     private void showEloExplanation() {
-        eloOverlay.setOpacity(0.0);
-        eloOverlay.setVisible(true);
-        eloOverlay.setManaged(true);
+        eloOverlay.setOpacity(0.0); eloOverlay.setVisible(true); eloOverlay.setManaged(true);
         FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
-        fade.setToValue(1.0);
-        fade.play();
+        fade.setToValue(1.0); fade.play();
     }
 
     private void hideEloExplanation() {
         FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
         fade.setToValue(0.0);
-        fade.setOnFinished(e -> {
-            eloOverlay.setVisible(false);
-            eloOverlay.setManaged(false);
-        });
+        fade.setOnFinished(e -> { eloOverlay.setVisible(false); eloOverlay.setManaged(false); });
         fade.play();
     }
 
     private RotateTransition createLogoAnimation() {
         RotateTransition rt = new RotateTransition(Duration.millis(800), mainLogo);
-        rt.setByAngle(360);
-        rt.setCycleCount(Animation.INDEFINITE);
-        rt.setInterpolator(Interpolator.LINEAR);
+        rt.setByAngle(360); rt.setCycleCount(Animation.INDEFINITE); rt.setInterpolator(Interpolator.LINEAR);
         return rt;
     }
 }

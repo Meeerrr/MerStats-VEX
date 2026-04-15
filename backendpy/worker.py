@@ -17,8 +17,8 @@ re_headers = {
     "Accept": "application/json"
 }
 
-# The array of historical seasons to process
-TARGET_SEASONS = [173, 181, 190]
+# The complete array of historical seasons to process (From High Stakes down to Gateway)
+TARGET_SEASONS = [190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def fetch_all_pages(base_url):
     results = []
