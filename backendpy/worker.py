@@ -18,8 +18,8 @@ re_headers = {
     "Accept": "application/json"
 }
 
-# 199 = Push Back, 190 = High Stakes, 181 = Over Under, etc.
-TARGET_SEASONS = [199, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+# 197 = Push Back, 190 = High Stakes, 181 = Over Under, etc.
+TARGET_SEASONS = [197, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 # Seasons that are currently happening. We ALWAYS want to fetch new events for these.
 ACTIVE_SEASONS = [190, 199]

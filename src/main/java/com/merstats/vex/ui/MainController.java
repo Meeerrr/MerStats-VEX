@@ -68,7 +68,7 @@ public class MainController {
         setupEventTable();
 
         // Populate all seasons in order from newest to oldest
-        seasonMap.put("Push Back (25-26)", 199);
+        seasonMap.put("Push Back (25-26)", 197);
         seasonMap.put("High Stakes (24-25)", 190);
         seasonMap.put("Over Under (23-24)", 181);
         seasonMap.put("Spin Up (22-23)", 173);
