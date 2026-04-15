@@ -8,7 +8,12 @@ public class SeasonRanking {
     private String record;
     private double eloScore;
 
-    // Legacy variables from standard VEX rankings (optional, but keeps FXML happy)
+    // The raw Win/Loss/Tie buckets for local event calculation
+    private int wins;
+    private int losses;
+    private int ties;
+
+    // Legacy variables from standard VEX rankings
     private int wp;
     private int ap;
     private int sp;
@@ -17,7 +22,6 @@ public class SeasonRanking {
     public SeasonRanking() {}
 
     // --- CUSTOM GETTER FOR UI ---
-    // This will return "11017Y - MerStats" if the name exists, or just "11017Y" if it doesn't.
     public String getTeamDisplay() {
         if (teamName != null && !teamName.isEmpty() && !teamName.equals("Unknown")) {
             return teamNumber + " - " + teamName;
@@ -41,6 +45,15 @@ public class SeasonRanking {
 
     public double getEloScore() { return eloScore; }
     public void setEloScore(double eloScore) { this.eloScore = eloScore; }
+
+    public int getWins() { return wins; }
+    public void setWins(int wins) { this.wins = wins; }
+
+    public int getLosses() { return losses; }
+    public void setLosses(int losses) { this.losses = losses; }
+
+    public int getTies() { return ties; }
+    public void setTies(int ties) { this.ties = ties; }
 
     public int getWp() { return wp; }
     public void setWp(int wp) { this.wp = wp; }
