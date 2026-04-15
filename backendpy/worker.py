@@ -1,6 +1,7 @@
 import requests
 import os
 import time
+import json
 from datetime import datetime
 from dotenv import load_dotenv
 from engine import calculate_truerank
@@ -17,8 +18,15 @@ re_headers = {
     "Accept": "application/json"
 }
 
-# Added the 25-26 Push Back season (ID 199) to the front of the line!
+# 199 = Push Back, 190 = High Stakes, 181 = Over Under, etc.
 TARGET_SEASONS = [199, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+
+# Seasons that are currently happening. We ALWAYS want to fetch new events for these.
+ACTIVE_SEASONS = [190, 199]
+
+# Setup the Local Cache Directory
+CACHE_DIR = "event_cache"
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 def fetch_all_pages(base_url):
     results = []
@@ -33,12 +41,12 @@ def fetch_all_pages(base_url):
             res = requests.get(paginated_url, headers=re_headers, timeout=15)
 
             if res.status_code == 429:
-                print("\n⚠️ Rate limited by VEX! Sleeping for 5 seconds...")
+                print("\n⚠️ Rate limited! Sleeping for 5 seconds...")
                 time.sleep(5)
                 continue
 
             if res.status_code != 200:
-                print(f"\n⚠️ API Error {res.status_code}. Skipping page {current_page}...")
+                print(f"\n⚠️ API Error {res.status_code}. Skipping page...")
                 current_page += 1
                 continue
 
@@ -54,10 +62,10 @@ def fetch_all_pages(base_url):
             current_page += 1
 
         except requests.exceptions.JSONDecodeError:
-            print(f"\n⚠️ VEX sent corrupted data. Skipping page {current_page}...")
+            print(f"\n⚠️ Corrupted data. Skipping page...")
             current_page += 1
         except requests.exceptions.RequestException as e:
-            print(f"\n⚠️ Network disconnected. Skipping page {current_page}...")
+            print(f"\n⚠️ Network disconnected. Skipping page...")
             current_page += 1
 
     print()
@@ -72,17 +80,41 @@ def upload_in_batches(endpoint, payload, headers, batch_size=1000):
         else:
             print(f"   -> ❌ Batch failed: {res.text}")
 
+def check_season_in_db(season_id, headers):
+    """Checks if a season already has data in Supabase."""
+    url = f"{SUPABASE_URL}/rest/v1/global_truerank?season_id=eq.{season_id}&select=team_id&limit=1"
+    try:
+        res = requests.get(url, headers=headers)
+        if res.status_code == 200 and len(res.json()) > 0:
+            return True
+    except:
+        pass
+    return False
+
 def run_worker():
     if not ROBOT_EVENTS_KEY or not SUPABASE_URL:
         print("❌ ERROR: Keys are missing! Check your .env file.")
         return
 
-    print(f"🤖 Starting Historical TrueRank Pipeline for {len(TARGET_SEASONS)} seasons...")
+    supabase_headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates"
+    }
+
+    print(f"🤖 Starting Smart Incremental Pipeline for {len(TARGET_SEASONS)} seasons...")
 
     for season_id in TARGET_SEASONS:
         print(f"\n==================================================")
         print(f"📅 COMMENCING PROCESSING FOR SEASON ID: {season_id}")
         print(f"==================================================")
+
+        # 1. THE CLOUD SYNC CHECK
+        if season_id not in ACTIVE_SEASONS:
+            if check_season_in_db(season_id, supabase_headers):
+                print(f"✅ Season {season_id} is already fully archived in Supabase. Skipping!")
+                continue
 
         print("📡 Fetching event manifest...", end=" ")
         events_url = f"https://www.robotevents.com/api/v2/events?season[]={season_id}&per_page=250"
@@ -95,23 +127,54 @@ def run_worker():
         all_teams = []
         all_matches = []
 
+        # 2. THE LOCAL DELTA CACHE
         for idx, event in enumerate(past_events):
             event_id = event['id']
             sku = event.get('sku')
+
+            cache_path = os.path.join(CACHE_DIR, f"{sku}.json")
+
+            # If we already downloaded this specific tournament, load it from disk!
+            if os.path.exists(cache_path):
+                try:
+                    with open(cache_path, "r") as f:
+                        cached_data = json.load(f)
+                        all_teams.extend(cached_data["teams"])
+                        all_matches.extend(cached_data["matches"])
+                    print(f"[{idx+1}/{len(past_events)}] {sku} -> ⚡ Loaded from Local Cache")
+                    continue
+                except:
+                    pass # If the cache file is corrupted, we just fall through and re-download it
+
+            # If it's a new tournament, download it from the API
             print(f"[{idx+1}/{len(past_events)}] Extracting: {sku}")
+            event_teams = []
+            event_matches = []
 
             for div in event.get('divisions', []):
                 div_id = div['id']
 
                 print("   ↳ Downloading Roster: ", end="", flush=True)
                 rank_url = f"https://www.robotevents.com/api/v2/events/{event_id}/divisions/{div_id}/rankings?per_page=250"
-                all_teams.extend([r["team"] for r in fetch_all_pages(rank_url)])
+                event_teams.extend([r["team"] for r in fetch_all_pages(rank_url)])
 
                 print("   ↳ Downloading Matches: ", end="", flush=True)
                 match_url = f"https://www.robotevents.com/api/v2/events/{event_id}/divisions/{div_id}/matches?per_page=250"
-                all_matches.extend(fetch_all_pages(match_url))
+                event_matches.extend(fetch_all_pages(match_url))
 
-            time.sleep(3)
+            # Save the newly downloaded event to our hard drive so we never have to download it again
+            with open(cache_path, "w") as f:
+                json.dump({"teams": event_teams, "matches": event_matches}, f)
+
+            all_teams.extend(event_teams)
+            all_matches.extend(event_matches)
+
+            time.sleep(3) # Polite delay for API
+
+        # --- CRUNCH THE MATH ---
+        if not all_matches:
+            print("⚠️ No matches found to process. Moving on.")
+            continue
 
         print(f"\n🧠 Running TrueRank on {len(all_matches)} matches...")
         final_elo_data = calculate_truerank(all_teams, all_matches)
@@ -119,13 +182,8 @@ def run_worker():
         for data in final_elo_data:
             data["season_id"] = season_id
 
+        # --- UPLOAD TO DATABASE ---
         print("\n☁️ Connecting to Supabase...")
-        supabase_headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-        }
 
         print(f"☁️ Step 1/2: Pushing global roster...")
         teams_payload = []
