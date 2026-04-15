@@ -28,8 +28,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainController {
 
@@ -70,10 +68,8 @@ public class MainController {
 
     @FXML private Button btnLoadLeaderboard;
     @FXML private TextField lbSearchInput;
-    @FXML private TextField eventSkuInput;
     @FXML private Button btnHowItWorks;
     @FXML private ProgressBar lbLoadingBar;
-
     @FXML private Label leaderboardTitle;
 
     @FXML private TableView<SeasonRanking> leaderboardTable;
@@ -91,8 +87,6 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
 
-    private static final String DEFAULT_EVENT_SKU = "RE-VRC-23-3690";
-
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
 
     @FXML
@@ -102,6 +96,8 @@ public class MainController {
 
         setupSearchHistoryPopup();
         searchButton.setOnAction(event -> handleSearch());
+
+        // Wire the button to the new Cloud Fetch logic
         btnLoadLeaderboard.setOnAction(event -> loadLeaderboardData());
 
         btnHowItWorks.setOnAction(event -> showEloExplanation());
@@ -109,7 +105,6 @@ public class MainController {
 
         setupNavigationRouter();
         setupSocialLinks();
-
         playEntranceAnimation();
     }
 
@@ -157,12 +152,12 @@ public class MainController {
         lbWpCol.setCellValueFactory(new PropertyValueFactory<>("wp"));
         lbApCol.setCellValueFactory(new PropertyValueFactory<>("ap"));
         lbSpCol.setCellValueFactory(new PropertyValueFactory<>("sp"));
-        lbTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("trueRankScore"));
+        lbTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("eloScore"));
 
         lbTeamCol.setPrefWidth(220.0);
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        leaderboardPlaceholder = new Label("Click 'Load Event' to sequence match schedules and build MMR standings.");
+        leaderboardPlaceholder = new Label("Click 'Refresh Leaderboard' to sync with MerStats Cloud.");
         leaderboardPlaceholder.getStyleClass().add("placeholder-label");
         leaderboardTable.setPlaceholder(leaderboardPlaceholder);
 
@@ -183,17 +178,16 @@ public class MainController {
                     getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
 
                     int globalRank = teamData.getRank();
-
                     int totalTeams = getTableView().getItems().size();
                     int domeThreshold = (int) Math.ceil(totalTeams * 0.07);
 
                     if (totalTeams > 0 && globalRank <= Math.max(1, domeThreshold)) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
-                    } else if (mmr >= 1600.0) {
+                    } else if (mmr >= 1900.0) {
                         getStyleClass().add("tier-titanium");
                         setText("💠 Titanium (" + mmr + ")");
-                    } else if (mmr >= 1550.0) {
+                    } else if (mmr >= 1700.0) {
                         getStyleClass().add("tier-carbon");
                         setText("⚡ Carbon Fiber (" + mmr + ")");
                     } else if (mmr >= 1500.0) {
@@ -249,15 +243,8 @@ public class MainController {
 
         lbSearchInput.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(ranking -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                if (ranking.getTeamDisplay().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                }
-                return false;
+                if (newValue == null || newValue.isEmpty()) return true;
+                return ranking.getTeamDisplay().toLowerCase().contains(newValue.toLowerCase());
             });
         });
 
@@ -272,10 +259,7 @@ public class MainController {
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     Desktop.getDesktop().browse(new URI("https://github.com/Meeerrr"));
                 }
-            } catch (Exception ex) {
-                System.err.println("Could not open GitHub link.");
-                ex.printStackTrace();
-            }
+            } catch (Exception ex) { ex.printStackTrace(); }
         });
     }
 
@@ -310,9 +294,7 @@ public class MainController {
         Label[] allNavs = {btnDashboard, btnSkills, btnH2H, btnAwards, btnEvents, btnLeaderboards, btnAbout, btnSettings};
         for (Label nav : allNavs) {
             nav.getStyleClass().remove("nav-link-active");
-            if (!nav.getStyleClass().contains("nav-link")) {
-                nav.getStyleClass().add("nav-link");
-            }
+            if (!nav.getStyleClass().contains("nav-link")) nav.getStyleClass().add("nav-link");
         }
         activeNavLabel.getStyleClass().remove("nav-link");
         activeNavLabel.getStyleClass().add("nav-link-active");
@@ -340,32 +322,16 @@ public class MainController {
 
     private void loadLeaderboardData() {
         btnLoadLeaderboard.setDisable(true);
-        btnLoadLeaderboard.setText("Calculating MMR...");
+        btnLoadLeaderboard.setText("Connecting to Cloud...");
         lbLoadingBar.setVisible(true);
 
         masterLeaderboardData.clear();
         lbSearchInput.clear();
-        leaderboardTitle.setText("Extracting Event Data...");
-
-        String rawInput = eventSkuInput.getText().trim();
-        String finalSku = DEFAULT_EVENT_SKU;
-
-        if (!rawInput.isEmpty()) {
-            Matcher m = Pattern.compile("RE-[A-Za-z0-9]+-[0-9]+-[0-9]+").matcher(rawInput);
-            if (m.find()) {
-                finalSku = m.group();
-            } else {
-                finalSku = rawInput;
-            }
-        }
-
-        final String apiTarget = finalSku;
+        leaderboardTitle.setText("MerStats Global TrueRank");
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                String fetchedName = apiService.getEventNameBySku(apiTarget);
-                Platform.runLater(() -> leaderboardTitle.setText(fetchedName));
-                return apiService.getProcessedEloRankings(apiTarget);
+                return apiService.getGlobalLeaderboard();
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -373,27 +339,21 @@ public class MainController {
         }).thenAccept((List<SeasonRanking> rankingsData) -> {
             Platform.runLater(() -> {
                 btnLoadLeaderboard.setDisable(false);
-                btnLoadLeaderboard.setText("Load Event");
+                btnLoadLeaderboard.setText("Refresh Leaderboard");
                 lbLoadingBar.setVisible(false);
 
                 if (rankingsData != null && !rankingsData.isEmpty()) {
-
-                    rankingsData.sort((r1, r2) -> Double.compare(r2.getTrueRankScore(), r1.getTrueRankScore()));
-
                     for (int i = 0; i < rankingsData.size(); i++) {
                         rankingsData.get(i).setRank(i + 1);
                     }
-
                     masterLeaderboardData.setAll(rankingsData);
 
                     leaderboardTable.setOpacity(0);
-                    FadeTransition fade = new FadeTransition(Duration.millis(500), leaderboardTable);
+                    FadeTransition fade = new FadeTransition(Duration.millis(400), leaderboardTable);
                     fade.setToValue(1);
                     fade.play();
-
                 } else {
-                    leaderboardPlaceholder.setText("Error: Failed to fetch ranking data. Please verify the URL or SKU.");
-                    leaderboardTitle.setText("Global TrueRank Leaderboard");
+                    leaderboardPlaceholder.setText("Error: Failed to connect to MerStats Cloud.");
                 }
             });
         });
@@ -423,9 +383,7 @@ public class MainController {
 
         if (!recentSearches.contains(teamNumber)) {
             recentSearches.add(0, teamNumber);
-            if (recentSearches.size() > 5) {
-                recentSearches.remove(5);
-            }
+            if (recentSearches.size() > 5) recentSearches.remove(5);
         }
 
         searchButton.setDisable(true);
@@ -434,9 +392,7 @@ public class MainController {
         dashboardPlaceholder.setText("Fetching telemetry for " + teamNumber + "...");
         loadingBar.setVisible(true);
 
-        if (logoRotation == null) {
-            logoRotation = createLogoAnimation();
-        }
+        if (logoRotation == null) logoRotation = createLogoAnimation();
         logoRotation.play();
         contentCard.getStyleClass().add("logo-active-pulse");
 
@@ -453,36 +409,21 @@ public class MainController {
                     Platform.runLater(() -> {
                         dashboardTitle.setText("Team Not Found");
                         dashboardSubtitle.setText("Please verify the ID and try again.");
-                        dashboardPlaceholder.setText("Error: Team '" + teamNumber + "' does not exist in the database.");
-
-                        loadingBar.setVisible(false);
-                        if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-                        contentCard.getStyleClass().remove("logo-active-pulse");
-                        searchButton.setDisable(false);
-                        searchButton.setText("Search");
+                        dashboardPlaceholder.setText("Error: Team '" + teamNumber + "' does not exist.");
+                        resetSearchUI();
                     });
                     return null;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 Platform.runLater(() -> {
-                    dashboardPlaceholder.setText("Connection Error. Please check your internet and try again.");
-                    loadingBar.setVisible(false);
-                    if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-                    contentCard.getStyleClass().remove("logo-active-pulse");
-                    searchButton.setDisable(false);
-                    searchButton.setText("Search");
+                    dashboardPlaceholder.setText("Connection Error. Please check your internet.");
+                    resetSearchUI();
                 });
                 return null;
             }
         }).thenAccept((List<SkillsRanking> skillsData) -> {
             Platform.runLater(() -> {
-                loadingBar.setVisible(false);
-                if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-                contentCard.getStyleClass().remove("logo-active-pulse");
-                searchButton.setDisable(false);
-                searchButton.setText("Search");
-
+                resetSearchUI();
                 if (skillsData != null && !skillsData.isEmpty()) {
                     skillsData.sort((rank1, rank2) -> {
                         int seasonCompare = Integer.compare(rank2.getSeasonId(), rank1.getSeasonId());
@@ -501,7 +442,6 @@ public class MainController {
                     tableSlide.setToY(0.0);
                     tableFade.play();
                     tableSlide.play();
-
                 } else if (skillsData != null && skillsData.isEmpty()) {
                     dashboardPlaceholder.setText("No skills runs recorded for " + teamNumber + ".");
                 }
@@ -509,25 +449,18 @@ public class MainController {
         });
     }
 
+    private void resetSearchUI() {
+        loadingBar.setVisible(false);
+        if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
+        contentCard.getStyleClass().remove("logo-active-pulse");
+        searchButton.setDisable(false);
+        searchButton.setText("Search");
+    }
+
     private void showEloExplanation() {
-        Label explanationLabel = (Label) ((VBox) eloOverlay.getChildren().get(0)).getChildren().get(2);
-
-        explanationLabel.setText(
-                "Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.\n\n" +
-                        "1. Alliance Averaging:\n" +
-                        "The engine calculates the average Elo rating for both the Red and Blue alliances to determine statistical win probability. If a rookie alliance upsets a veteran alliance, they steal a huge amount of MMR points.\n\n" +
-                        "2. Normalized Margin of Victory:\n" +
-                        "A 1-point win is very different from a 50-point blowout. The engine calculates the percentage difference in score to reward total dominance across any season.\n\n" +
-                        "3. K-Factor Decay:\n" +
-                        "Teams are tracked individually. A robot playing its 2nd match has high volatility (K=64), allowing them to climb quickly. By their 9th match, their rating stabilizes (K=16), filtering out late-tournament flukes.\n\n" +
-                        "4. Elimination Stakes & Auto Filter:\n" +
-                        "Matches played in the Elimination Bracket are multiplied by 1.5x to reward clutch performance. Alliances that win the Autonomous period receive an additional 1.15x multiplier to isolate mechanical coding superiority."
-        );
-
         eloOverlay.setOpacity(0.0);
         eloOverlay.setVisible(true);
         eloOverlay.setManaged(true);
-
         FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
         fade.setToValue(1.0);
         fade.play();

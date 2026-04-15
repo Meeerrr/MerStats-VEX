@@ -1,23 +1,25 @@
 import requests
+import os
 from engine import calculate_truerank
 
-# --- 1. CONFIGURATION ---
-SUPABASE_URL = "https://hzgvkmlonbffeuelojxv.supabase.co" # Put your URL here
-SUPABASE_KEY = "secret_API"              # Put your Anon key here
+# The unique web address of our Supabase project
+SUPABASE_URL = os.environ.get("https://hzgvkmlonbffeuelojxv.supabase.co")
 
-ROBOT_EVENTS_KEY = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNTE0MjRkZDAyMDQ1MzA1MGVlZGYzZjM2OGY4ODQ3NDFhZGMwOTZjMjExMTA1OWRiYWE0MDFiMDJjY2VhZGE1ZGE0OTc4ZmY1ZDhlYjNkNzciLCJpYXQiOjE3NzUxNDUzMzAuNTI1OTI5LCJuYmYiOjE3NzUxNDUzMzAuNTI1OTMwOSwiZXhwIjoyNzIxOTE2NTMwLjUyMDU3NzksInN1YiI6IjEyNjM3MyIsInNjb3BlcyI6W119.hZuGrp7w4nO6m8NOgm3iKsFZ5l85PV8W5yhP9mgnpgXuJCL71Tg9IWR4xTIdD1uVVEKAZGPhuwRybTGHO2jp171zVZFU-U4K7w0m_wj1xzqu8-yIHW6uzhxypMAF6Nixc__vT0gKcEuLZE_WECxRjd3PQTtZ7uOT8bu81bXpCWSSd-GtItSaGpZ10CeQ42VV0aFzNm2uMePINW2N-gMJxjbrKEIqcloNw8R8K_xdrpL8O8VwQJoQFPMmq24fLSmcsWX8l4aoDqwHWsKx19JNj80h6lwge5WdGcWxmYU1b1crESb8Od69GV78QwnM0QqgIu7KRbSqiBeOVE4GyxxIVflnQPoiRSRKz1k5I1dLEzoBwavG-LX2QZjtZZTL5gFLOc_rqJLb6Y4rANZvJBpRfFUJ0MNRn0Ert7Up5ahDZqkU3_67_CQAomZITP8MVK7O__btFScefR4m9mffete2ad2MSbY3PiN9sFFp3dFhYGnC9MJKCvYn-6jzll-4oJpzj41QvKLe8Dwpkqz3DxRV8v9dgQcgifcEUi8yix1V8_YtX-VlPiH3TKdDm6gMMQewxK-25KiajV7wSm2ZLfj_KW2CLc5qyr09egDWdhAJhn_hrkKqlaCjP6CFM998HIIkwPzW81bh3SmqRgzvobg7fgpRrA2CuvU96ZIWDplS8Mg"    # Put your RE key here
+# The 'service_role' secret key (The Admin Password that allows Python to bypass Row Level Security and WRITE to the database)
+SUPABASE_KEY = os.environ.get("secret")
+
+
+ROBOT_EVENTS_KEY = os.environ.get("Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNTE0MjRkZDAyMDQ1MzA1MGVlZGYzZjM2OGY4ODQ3NDFhZGMwOTZjMjExMTA1OWRiYWE0MDFiMDJjY2VhZGE1ZGE0OTc4ZmY1ZDhlYjNkNzciLCJpYXQiOjE3NzUxNDUzMzAuNTI1OTI5LCJuYmYiOjE3NzUxNDUzMzAuNTI1OTMwOSwiZXhwIjoyNzIxOTE2NTMwLjUyMDU3NzksInN1YiI6IjEyNjM3MyIsInNjb3BlcyI6W119.hZuGrp7w4nO6m8NOgm3iKsFZ5l85PV8W5yhP9mgnpgXuJCL71Tg9IWR4xTIdD1uVVEKAZGPhuwRybTGHO2jp171zVZFU-U4K7w0m_wj1xzqu8-yIHW6uzhxypMAF6Nixc__vT0gKcEuLZE_WECxRjd3PQTtZ7uOT8bu81bXpCWSSd-GtItSaGpZ10CeQ42VV0aFzNm2uMePINW2N-gMJxjbrKEIqcloNw8R8K_xdrpL8O8VwQJoQFPMmq24fLSmcsWX8l4aoDqwHWsKx19JNj80h6lwge5WdGcWxmYU1b1crESb8Od69GV78QwnM0QqgIu7KRbSqiBeOVE4GyxxIVflnQPoiRSRKz1k5I1dLEzoBwavG-LX2QZjtZZTL5gFLOc_rqJLb6Y4rANZvJBpRfFUJ0MNRn0Ert7Up5ahDZqkU3_67_CQAomZITP8MVK7O__btFScefR4m9mffete2ad2MSbY3PiN9sFFp3dFhYGnC9MJKCvYn-6jzll-4oJpzj41QvKLe8Dwpkqz3DxRV8v9dgQcgifcEUi8yix1V8_YtX-VlPiH3TKdDm6gMMQewxK-25KiajV7wSm2ZLfj_KW2CLc5qyr09egDWdhAJhn_hrkKqlaCjP6CFM998HIIkwPzW81bh3SmqRgzvobg7fgpRrA2CuvU96ZIWDplS8Mg")
 TARGET_SKU = "RE-VRC-23-3690"
 
-# Headers for RobotEvents
 re_headers = {
-    "Authorization": ROBOT_EVENTS_KEY,
+    "Authorization": f"Bearer {ROBOT_EVENTS_KEY}",
     "Accept": "application/json"
 }
 
 def run_worker():
     print(f"🤖 Starting TrueRank Worker for SKU: {TARGET_SKU}")
 
-    # --- 2. FETCH DATA FROM ROBOT EVENTS ---
     print("📡 Fetching Event Metadata...")
     event_res = requests.get(f"https://www.robotevents.com/api/v2/events?sku[]={TARGET_SKU}", headers=re_headers).json()
 
@@ -43,13 +45,10 @@ def run_worker():
         if "data" in match_res:
             all_matches.extend(match_res["data"])
 
-    # --- 3. CRUNCH THE MATH ---
     print("🧠 Running 3-Pass TrueRank Algorithm...")
     final_elo_data = calculate_truerank(all_teams, all_matches)
 
-    # --- 4. PUSH DIRECTLY TO SUPABASE VIA REST API ---
     print("☁️ Connecting to Supabase...")
-
     supabase_headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -57,14 +56,12 @@ def run_worker():
         "Prefer": "resolution=merge-duplicates"
     }
 
-    # STEP 4A: Prepare and upload the Team Roster first
     print("☁️ Step 1/2: Pushing roster to 'teams' table...")
     teams_payload = []
     seen_teams = set()
 
     for t in all_teams:
         t_id = t.get("name") or t.get("code") or t.get("number")
-        # Ignore broken data or duplicates
         if not t_id or t_id in seen_teams:
             continue
 
@@ -82,7 +79,6 @@ def run_worker():
         print(f"❌ Teams upload failed: {teams_res.text}")
         return
 
-    # STEP 4B: Now that the teams exist, upload the TrueRank math
     print(f"☁️ Step 2/2: Uploading {len(final_elo_data)} Elo records to 'global_truerank'...")
     elo_endpoint = f"{SUPABASE_URL}/rest/v1/global_truerank"
     elo_res = requests.post(elo_endpoint, json=final_elo_data, headers=supabase_headers)

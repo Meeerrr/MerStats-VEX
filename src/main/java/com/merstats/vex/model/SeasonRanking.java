@@ -1,58 +1,46 @@
 package com.merstats.vex.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class SeasonRanking {
 
-    private VexTeam team;
-    private VexEventInfo event;
-    private String teamName;
     private int rank;
-    private int wins;
-    private int losses;
-    private int ties;
+    private String teamNumber;
+    private String teamName;
+    private String record;
+    private double eloScore;
+
+    // Legacy variables from standard VEX rankings (optional, but keeps FXML happy)
     private int wp;
     private int ap;
     private int sp;
 
-    private double eloScore = 1500.0;
+    // --- CONSTRUCTOR ---
+    public SeasonRanking() {}
 
-    public SeasonRanking() {
+    // --- CUSTOM GETTER FOR UI ---
+    // This will return "11017Y - MerStats" if the name exists, or just "11017Y" if it doesn't.
+    public String getTeamDisplay() {
+        if (teamName != null && !teamName.isEmpty() && !teamName.equals("Unknown")) {
+            return teamNumber + " - " + teamName;
+        }
+        return teamNumber;
     }
 
-    public double getTrueRankScore() {
-        return Math.round(this.eloScore * 10.0) / 10.0;
-    }
-
-    public double getEloScore() { return eloScore; }
-    public void setEloScore(double eloScore) { this.eloScore = eloScore; }
-
-    public VexTeam getTeam() { return team; }
-    public void setTeam(VexTeam team) { this.team = team; }
-
-    public String getTeamName() {
-        return teamName;
-    }
-
-    public void setTeamName(String teamName) {
-        this.teamName = teamName;
-    }
-
-    public VexEventInfo getEvent() { return event; }
-    public void setEvent(VexEventInfo event) { this.event = event; }
+    // --- STANDARD GETTERS AND SETTERS ---
 
     public int getRank() { return rank; }
     public void setRank(int rank) { this.rank = rank; }
 
-    public int getWins() { return wins; }
-    public void setWins(int wins) { this.wins = wins; }
+    public String getTeamNumber() { return teamNumber; }
+    public void setTeamNumber(String teamNumber) { this.teamNumber = teamNumber; }
 
-    public int getLosses() { return losses; }
-    public void setLosses(int losses) { this.losses = losses; }
+    public String getTeamName() { return teamName; }
+    public void setTeamName(String teamName) { this.teamName = teamName; }
 
-    public int getTies() { return ties; }
-    public void setTies(int ties) { this.ties = ties; }
+    public String getRecord() { return record; }
+    public void setRecord(String record) { this.record = record; }
+
+    public double getEloScore() { return eloScore; }
+    public void setEloScore(double eloScore) { this.eloScore = eloScore; }
 
     public int getWp() { return wp; }
     public void setWp(int wp) { this.wp = wp; }
@@ -62,24 +50,4 @@ public class SeasonRanking {
 
     public int getSp() { return sp; }
     public void setSp(int sp) { this.sp = sp; }
-
-    public String getTeamNumber() {
-        return team != null ? team.getResolvedNumber() : "Unknown";
-    }
-
-    public String getTeamDisplay() {
-        if (team == null) return "Unknown Team";
-        String num = team.getResolvedNumber();
-        String name = team.getResolvedName();
-
-        if (name.isEmpty() || name.equals(num) || name.equals("Unknown")) {
-            return num;
-        }
-
-        return num + " | " + name;
-    }
-
-    public String getRecord() {
-        return wins + "-" + losses + "-" + ties;
-    }
 }
