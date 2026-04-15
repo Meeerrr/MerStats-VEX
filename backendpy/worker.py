@@ -2,16 +2,26 @@ import requests
 import os
 import time
 from datetime import datetime
+from dotenv import load_dotenv  # NEW: Imports the tool
 from engine import calculate_truerank
 
-# --- 1. CONFIGURATION ---
-SUPABASE_URL = os.environ.get("https://hzgvkmlonbffeuelojxv.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")  # Service Role Key
-ROBOT_EVENTS_KEY = os.environ.get("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNTE0MjRkZDAyMDQ1MzA1MGVlZGYzZjM2OGY4ODQ3NDFhZGMwOTZjMjExMTA1OWRiYWE0MDFiMDJjY2VhZGE1ZGE0OTc4ZmY1ZDhlYjNkNzciLCJpYXQiOjE3NzUxNDUzMzAuNTI1OTI5LCJuYmYiOjE3NzUxNDUzMzAuNTI1OTMwOSwiZXhwIjoyNzIxOTE2NTMwLjUyMDU3NzksInN1YiI6IjEyNjM3MyIsInNjb3BlcyI6W119.hZuGrp7w4nO6m8NOgm3iKsFZ5l85PV8W5yhP9mgnpgXuJCL71Tg9IWR4xTIdD1uVVEKAZGPhuwRybTGHO2jp171zVZFU-U4K7w0m_wj1xzqu8-yIHW6uzhxypMAF6Nixc__vT0gKcEuLZE_WECxRjd3PQTtZ7uOT8bu81bXpCWSSd-GtItSaGpZ10CeQ42VV0aFzNm2uMePINW2N-gMJxjbrKEIqcloNw8R8K_xdrpL8O8VwQJoQFPMmq24fLSmcsWX8l4aoDqwHWsKx19JNj80h6lwge5WdGcWxmYU1b1crESb8Od69GV78QwnM0QqgIu7KRbSqiBeOVE4GyxxIVflnQPoiRSRKz1k5I1dLEzoBwavG-LX2QZjtZZTL5gFLOc_rqJLb6Y4rANZvJBpRfFUJ0MNRn0Ert7Up5ahDZqkU3_67_CQAomZITP8MVK7O__btFScefR4m9mffete2ad2MSbY3PiN9sFFp3dFhYGnC9MJKCvYn-6jzll-4oJpzj41QvKLe8Dwpkqz3DxRV8v9dgQcgifcEUi8yix1V8_YtX-VlPiH3TKdDm6gMMQewxK-25KiajV7wSm2ZLfj_KW2CLc5qyr09egDWdhAJhn_hrkKqlaCjP6CFM998HIIkwPzW81bh3SmqRgzvobg7fgpRrA2CuvU96ZIWDplS8Mg")
+# This tells Python to look for a .env file and load the keys into the environment!
+load_dotenv()
 
-# 190 = VRC High Stakes (2024-2025)
-# 181 = VRC Over Under (2023-2024)
+# --- 1. CONFIGURATION ---
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+ROBOT_EVENTS_KEY = os.environ.get("ROBOT_EVENTS_KEY")
+
 TARGET_SEASON_ID = 190
+
+def run_worker():
+    print(f"🤖 Starting Full Season TrueRank Pipeline for Season: {TARGET_SEASON_ID}")
+
+    # NEW: A quick safety check so you know if your keys loaded correctly!
+    if not ROBOT_EVENTS_KEY or not SUPABASE_URL:
+        print("❌ ERROR: Keys are missing! Check your .env file.")
+        return
 
 re_headers = {
     "Authorization": f"Bearer {ROBOT_EVENTS_KEY}",
