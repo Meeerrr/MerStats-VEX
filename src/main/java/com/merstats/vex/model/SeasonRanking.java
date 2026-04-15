@@ -8,28 +8,22 @@ public class SeasonRanking {
     private String record;
     private double eloScore;
 
-    // The raw Win/Loss/Tie buckets for local event calculation
     private int wins;
     private int losses;
     private int ties;
 
-    // Legacy variables from standard VEX rankings
     private int wp;
     private int ap;
     private int sp;
 
-    // --- CONSTRUCTOR ---
     public SeasonRanking() {}
 
-    // --- CUSTOM GETTER FOR UI ---
     public String getTeamDisplay() {
         if (teamName != null && !teamName.isEmpty() && !teamName.equals("Unknown")) {
             return teamNumber + " - " + teamName;
         }
         return teamNumber;
     }
-
-    // --- STANDARD GETTERS AND SETTERS ---
 
     public int getRank() { return rank; }
     public void setRank(int rank) { this.rank = rank; }

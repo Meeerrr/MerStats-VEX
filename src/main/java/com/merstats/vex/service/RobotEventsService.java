@@ -17,11 +17,9 @@ import java.util.List;
 
 public class RobotEventsService {
 
-    // --- ROBOT EVENTS CONFIGURATION ---
     private static final String RE_API_KEY = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNTE0MjRkZDAyMDQ1MzA1MGVlZGYzZjM2OGY4ODQ3NDFhZGMwOTZjMjExMTA1OWRiYWE0MDFiMDJjY2VhZGE1ZGE0OTc4ZmY1ZDhlYjNkNzciLCJpYXQiOjE3NzUxNDUzMzAuNTI1OTI5LCJuYmYiOjE3NzUxNDUzMzAuNTI1OTMwOSwiZXhwIjoyNzIxOTE2NTMwLjUyMDU3NzksInN1YiI6IjEyNjM3MyIsInNjb3BlcyI6W119.hZuGrp7w4nO6m8NOgm3iKsFZ5l85PV8W5yhP9mgnpgXuJCL71Tg9IWR4xTIdD1uVVEKAZGPhuwRybTGHO2jp171zVZFU-U4K7w0m_wj1xzqu8-yIHW6uzhxypMAF6Nixc__vT0gKcEuLZE_WECxRjd3PQTtZ7uOT8bu81bXpCWSSd-GtItSaGpZ10CeQ42VV0aFzNm2uMePINW2N-gMJxjbrKEIqcloNw8R8K_xdrpL8O8VwQJoQFPMmq24fLSmcsWX8l4aoDqwHWsKx19JNj80h6lwge5WdGcWxmYU1b1crESb8Od69GV78QwnM0QqgIu7KRbSqiBeOVE4GyxxIVflnQPoiRSRKz1k5I1dLEzoBwavG-LX2QZjtZZTL5gFLOc_rqJLb6Y4rANZvJBpRfFUJ0MNRn0Ert7Up5ahDZqkU3_67_CQAomZITP8MVK7O__btFScefR4m9mffete2ad2MSbY3PiN9sFFp3dFhYGnC9MJKCvYn-6jzll-4oJpzj41QvKLe8Dwpkqz3DxRV8v9dgQcgifcEUi8yix1V8_YtX-VlPiH3TKdDm6gMMQewxK-25KiajV7wSm2ZLfj_KW2CLc5qyr09egDWdhAJhn_hrkKqlaCjP6CFM998HIIkwPzW81bh3SmqRgzvobg7fgpRrA2CuvU96ZIWDplS8Mg";
     private static final String BASE_URL = "https://www.robotevents.com/api/v2";
 
-    // --- SUPABASE CONFIGURATION ---
     private static final String SUPABASE_URL = "https://hzgvkmlonbffeuelojxv.supabase.co";
     private static final String SUPABASE_ANON_KEY = "sb_publishable_aEbWOGCjVYkkiG2LS_Zczg_mYlnRsz1";
 
@@ -33,18 +31,9 @@ public class RobotEventsService {
         this.mapper = new ObjectMapper();
     }
 
-    // -------------------------------------------------------------
-    // PART 1: LIVE ROBOT EVENTS DATA (For Individual Team Searches)
-    // -------------------------------------------------------------
     public VexTeam getTeamByNumber(String teamNumber) throws Exception {
         String url = BASE_URL + "/teams?number%5B%5D=" + teamNumber;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", RE_API_KEY)
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).header("Authorization", RE_API_KEY).header("Accept", "application/json").GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == 200) {
             TeamResponse teamResponse = mapper.readValue(response.body(), TeamResponse.class);
@@ -56,13 +45,7 @@ public class RobotEventsService {
 
     public List<SkillsRanking> getSkillsByTeamId(int teamId) throws Exception {
         String url = BASE_URL + "/teams/" + teamId + "/skills?per_page=250";
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", RE_API_KEY)
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).header("Authorization", RE_API_KEY).header("Accept", "application/json").GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == 200) {
             SkillsResponse skillsResponse = mapper.readValue(response.body(), SkillsResponse.class);
@@ -71,47 +54,23 @@ public class RobotEventsService {
         return null;
     }
 
-    // NEW: Fetches a single team's Global Elo score directly from Supabase for the Dashboard
     public Double getTeamGlobalElo(String teamNumber) throws Exception {
         String endpoint = SUPABASE_URL + "/rest/v1/global_truerank?select=elo_score&team_id=eq." + teamNumber + "&season_id=eq.190";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("apikey", SUPABASE_ANON_KEY)
-                .header("Authorization", "Bearer " + SUPABASE_ANON_KEY)
-                .GET()
-                .build();
-
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(endpoint)).header("apikey", SUPABASE_ANON_KEY).header("Authorization", "Bearer " + SUPABASE_ANON_KEY).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == 200) {
             JsonNode array = mapper.readTree(response.body());
-            if (array.isArray() && array.size() > 0) {
-                return array.get(0).path("elo_score").asDouble();
-            }
+            if (array.isArray() && array.size() > 0) return array.get(0).path("elo_score").asDouble();
         }
         return null;
     }
 
-    // -------------------------------------------------------------
-    // PART 2: CLOUD DATABASE FETCH (The Global Macro View)
-    // -------------------------------------------------------------
-    public List<SeasonRanking> getGlobalLeaderboard() throws Exception {
-        String endpoint = SUPABASE_URL + "/rest/v1/global_truerank?select=team_id,elo_score,wins,losses,ties,teams(team_name)&season_id=eq.190&order=elo_score.desc";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("apikey", SUPABASE_ANON_KEY)
-                .header("Authorization", "Bearer " + SUPABASE_ANON_KEY)
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-
+    public List<SeasonRanking> getGlobalLeaderboard(int seasonId) throws Exception {
+        String endpoint = SUPABASE_URL + "/rest/v1/global_truerank?select=team_id,elo_score,wins,losses,ties,teams(team_name)&season_id=eq." + seasonId + "&order=elo_score.desc";
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(endpoint)).header("apikey", SUPABASE_ANON_KEY).header("Authorization", "Bearer " + SUPABASE_ANON_KEY).header("Accept", "application/json").GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() != 200) {
-            System.out.println("Supabase Error: " + response.body());
-            return null;
-        }
+        if (response.statusCode() != 200) return null;
 
         JsonNode jsonArray = mapper.readTree(response.body());
         List<SeasonRanking> globalLeaderboard = new ArrayList<>();
@@ -119,7 +78,6 @@ public class RobotEventsService {
         if (jsonArray.isArray()) {
             for (JsonNode row : jsonArray) {
                 SeasonRanking team = new SeasonRanking();
-
                 team.setTeamNumber(row.path("team_id").asText());
                 team.setEloScore(row.path("elo_score").asDouble());
 
@@ -134,17 +92,12 @@ public class RobotEventsService {
                 } else {
                     team.setTeamName("Unknown");
                 }
-
                 globalLeaderboard.add(team);
             }
         }
-
         return globalLeaderboard;
     }
 
-    // -------------------------------------------------------------
-    // PART 3: LOCAL EVENT ENGINE (The Event Micro View)
-    // -------------------------------------------------------------
     public List<SeasonRanking> getEventTrueRank(String sku) throws Exception {
         String eventUrl = BASE_URL + "/events?sku[]=" + sku;
         HttpRequest evReq = HttpRequest.newBuilder().uri(URI.create(eventUrl)).header("Authorization", RE_API_KEY).GET().build();
@@ -154,12 +107,10 @@ public class RobotEventsService {
 
         int eventId = evData.get(0).path("id").asInt();
         JsonNode divisions = evData.get(0).path("divisions");
-
         List<SeasonRanking> eventRankings = new ArrayList<>();
 
         for (JsonNode div : divisions) {
             int divId = div.path("id").asInt();
-
             String rankUrl = BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/rankings?per_page=250";
             HttpRequest rankReq = HttpRequest.newBuilder().uri(URI.create(rankUrl)).header("Authorization", RE_API_KEY).GET().build();
             JsonNode rankData = mapper.readTree(client.send(rankReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
@@ -195,14 +146,12 @@ public class RobotEventsService {
 
                 double actualRed = redScore > blueScore ? 1.0 : (redScore == blueScore ? 0.5 : 0.0);
                 double actualBlue = 1.0 - actualRed;
-
                 double mov = 1.0 + (double) Math.abs(redScore - blueScore) / (redScore + blueScore);
 
                 processAllianceElo(redAll, blueAll, teamMap, actualRed, actualBlue, mov);
             }
             eventRankings.addAll(teamMap.values());
         }
-
         eventRankings.sort((t1, t2) -> Double.compare(t2.getEloScore(), t1.getEloScore()));
         return eventRankings;
     }
