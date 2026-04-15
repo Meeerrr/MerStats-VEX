@@ -19,11 +19,18 @@ re_headers = {
     "Accept": "application/json"
 }
 
-def fetch_all_pages(url):
-    """Handles pagination and prints a dot for every page it downloads."""
+def fetch_all_pages(base_url):
+    """Handles pagination safely by manually forcing the page number."""
     results = []
-    while url:
-        res = requests.get(url, headers=re_headers)
+    current_page = 1
+    last_page = 1
+
+    while current_page <= last_page:
+        # Force the page parameter so RobotEvents never drops our season filter
+        separator = "&" if "?" in base_url else "?"
+        paginated_url = f"{base_url}{separator}page={current_page}"
+
+        res = requests.get(paginated_url, headers=re_headers)
 
         if res.status_code == 429:
             print("\n⚠️ Rate limited! Sleeping for 5 seconds...")
@@ -34,12 +41,15 @@ def fetch_all_pages(url):
         if 'data' in data:
             results.extend(data['data'])
 
-        url = data.get('meta', {}).get('next_page_url')
+        # Update our target on the very first loop
+        meta = data.get('meta', {})
+        if current_page == 1:
+            last_page = meta.get('last_page', 1)
 
-        # NEW: Print a dot without moving to a new line (flush=True forces it to render immediately)
         print("■", end="", flush=True)
+        current_page += 1
 
-    print() # Move to the next line when the pagination is completely done
+    print() # Move to the next line when done
     return results
 
 def upload_in_batches(endpoint, payload, headers, batch_size=1000):
