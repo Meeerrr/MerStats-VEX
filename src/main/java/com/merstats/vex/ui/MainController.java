@@ -68,7 +68,7 @@ public class MainController {
         setupEventTable();
 
         // Populate all seasons in order from newest to oldest
-        seasonMap.put("Push Back (25-26)", 199); // Added the current active season!
+        seasonMap.put("Push Back (25-26)", 199);
         seasonMap.put("High Stakes (24-25)", 190);
         seasonMap.put("Over Under (23-24)", 181);
         seasonMap.put("Spin Up (22-23)", 173);
@@ -163,7 +163,9 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
                     int totalTeams = getTableView().getItems().size();
-                    int domeThreshold = (int) Math.ceil(totalTeams * 0.07);
+
+                    // NEW: Updated to 0.005 for the ultra-exclusive top 0.5% threshold!
+                    int domeThreshold = (int) Math.ceil(totalTeams * 0.005);
 
                     if (totalTeams > 0 && globalRank <= Math.max(1, domeThreshold)) {
                         getStyleClass().add("tier-dome");
@@ -310,7 +312,6 @@ public class MainController {
         CompletableFuture.supplyAsync(() -> {
             try {
                 String selectedSeason = seasonDropdown.getValue();
-                // We default to 199 for Push Back if something doesn't match perfectly
                 int seasonId = seasonMap.getOrDefault(selectedSeason, 199);
 
                 return apiService.getGlobalLeaderboard(seasonId);
