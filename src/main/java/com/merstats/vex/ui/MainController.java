@@ -469,28 +469,26 @@ public class MainController {
         });
     }
 
-    private void setupSearchHistoryPopup() {
-        ContextMenu historyMenu = new ContextMenu();
-        teamInput.setOnMouseClicked(event -> {
-            if (!recentSearches.isEmpty()) {
-                historyMenu.getItems().clear();
-                for (String search : recentSearches) {
-                    MenuItem item = new MenuItem(search);
-                    item.setOnAction(e -> { teamInput.setText(search); handleSearch(); });
-                    historyMenu.getItems().add(item);
-                }
-                historyMenu.show(teamInput, javafx.geometry.Side.BOTTOM, 0, 0);
-            }
-        });
-    }
+    private void showEloExplanation() {
+        Label explanationLabel = (Label) ((VBox) eloOverlay.getChildren().get(0)).getChildren().get(2);
 
-    private void resetSearchUI() {
-        loadingBar.setVisible(false);
-        if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-        contentCard.getStyleClass().remove("logo-active-pulse");
-        searchButton.setDisable(false);
-        searchButton.setText("Search");
-    }
+        explanationLabel.setText(
+                "Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.\n\n" +
+                        "1. Alliance Averaging:\n" +
+                        "The engine calculates the average Elo rating for both the Red and Blue alliances to determine statistical win probability. If a rookie alliance upsets a veteran alliance, they steal a huge amount of MMR points.\n\n" +
+                        "2. Normalized Margin of Victory:\n" +
+                        "A 1-point win is very different from a 50-point blowout. The engine calculates the percentage difference in score to reward total dominance across any season.\n\n" +
+                        "3. K-Factor Decay:\n" +
+                        "Teams are tracked individually. A robot playing its 2nd match has high volatility (K=64), allowing them to climb quickly. By their 9th match, their rating stabilizes (K=16), filtering out late-tournament flukes.\n\n" +
+                        "4. Elimination Stakes & Auto Filter:\n" +
+                        "Matches played in the Elimination Bracket are multiplied by 1.5x to reward clutch performance. Alliances that win the Autonomous period receive an additional 1.15x multiplier to isolate mechanical coding superiority.\n\n" +
+                        "5. Multi-Pass Iteration:\n" +
+                        "To ensure early qualification matches are scored fairly, the engine simulates the entire tournament three times in a row. It learns who the true best teams are in Pass 1, and retroactively applies that knowledge to Pass 2 and 3 for absolute mathematical precision."
+        );
+
+        eloOverlay.setOpacity(0.0);
+        eloOverlay.setVisible(true);
+        eloOverlay.setManaged(true);
 
     private void showEloExplanation() {
         eloOverlay.setOpacity(0.0); eloOverlay.setVisible(true); eloOverlay.setManaged(true);
