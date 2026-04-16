@@ -20,96 +20,84 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 
 import java.awt.Desktop;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainController {
 
-    @FXML private Label btnDashboard;
-    @FXML private Label btnSkills;
-    @FXML private Label btnH2H;
-    @FXML private Label btnAwards;
-    @FXML private Label btnEvents;
-    @FXML private Label btnLeaderboards;
-    @FXML private Label btnAbout;
-    @FXML private Label btnSettings;
-
-    @FXML private VBox sidebar;
-    @FXML private VBox contentCard;
-    @FXML private VBox leaderboardCard;
-    @FXML private VBox aboutCard;
-    @FXML private VBox placeholderCard;
-    @FXML private Label placeholderTitle;
-
-    @FXML private VBox eloOverlay;
-    @FXML private Button btnCloseOverlay;
-
-    @FXML private Button btnGithub;
+    @FXML private Label btnDashboard, btnSkills, btnH2H, btnAwards, btnEvents, btnLeaderboards, btnAbout, btnSettings;
+    @FXML private VBox sidebar, contentCard, leaderboardCard, eventCard, aboutCard, placeholderCard, eloOverlay;
+    @FXML private Label placeholderTitle, dashboardTitle, dashboardSubtitle, leaderboardTitle;
+    @FXML private Button btnCloseOverlay, btnGithub, searchButton, btnLoadLeaderboard, btnHowItWorks, eventSearchButton;
     @FXML private ImageView mainLogo;
-    @FXML private Label dashboardTitle;
-    @FXML private Label dashboardSubtitle;
-    @FXML private TextField teamInput;
-    @FXML private Button searchButton;
-    @FXML private ProgressBar loadingBar;
+    @FXML private TextField teamInput, lbSearchInput, eventInput;
+    @FXML private ProgressBar loadingBar, lbLoadingBar, eventLoadingBar;
+    @FXML private ComboBox<String> seasonDropdown;
 
     @FXML private TableView<SkillsRanking> skillsTable;
-    @FXML private TableColumn<SkillsRanking, String> seasonCol;
-    @FXML private TableColumn<SkillsRanking, String> eventCol;
-    @FXML private TableColumn<SkillsRanking, String> typeCol;
-    @FXML private TableColumn<SkillsRanking, Integer> attemptCol;
-    @FXML private TableColumn<SkillsRanking, Integer> scoreCol;
-    @FXML private TableColumn<SkillsRanking, Integer> dashRankCol;
-
-    @FXML private Button btnLoadLeaderboard;
-    @FXML private TextField lbSearchInput;
-    @FXML private TextField eventSkuInput;
-    @FXML private Button btnHowItWorks;
-    @FXML private ProgressBar lbLoadingBar;
-
-    @FXML private Label leaderboardTitle;
+    @FXML private TableColumn<SkillsRanking, String> seasonCol, eventCol, typeCol;
+    @FXML private TableColumn<SkillsRanking, Integer> attemptCol, scoreCol, dashRankCol;
 
     @FXML private TableView<SeasonRanking> leaderboardTable;
     @FXML private TableColumn<SeasonRanking, Integer> lbRankCol;
-    @FXML private TableColumn<SeasonRanking, String> lbTeamCol;
-    @FXML private TableColumn<SeasonRanking, String> lbRecordCol;
-    @FXML private TableColumn<SeasonRanking, Integer> lbWpCol;
-    @FXML private TableColumn<SeasonRanking, Integer> lbApCol;
-    @FXML private TableColumn<SeasonRanking, Integer> lbSpCol;
+    @FXML private TableColumn<SeasonRanking, String> lbTeamCol, lbRecordCol;
     @FXML private TableColumn<SeasonRanking, Double> lbTrueRankCol;
 
-    private Label dashboardPlaceholder;
-    private Label leaderboardPlaceholder;
+    @FXML private TableView<SeasonRanking> eventTable;
+    @FXML private TableColumn<SeasonRanking, Integer> evRankCol;
+    @FXML private TableColumn<SeasonRanking, String> evTeamCol, evRecordCol;
+    @FXML private TableColumn<SeasonRanking, Double> evTrueRankCol;
+
+    private Label dashboardPlaceholder, leaderboardPlaceholder;
     private final RobotEventsService apiService = new RobotEventsService();
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
-
-    private static final String DEFAULT_EVENT_SKU = "RE-VRC-23-3690";
-
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
+
+    // The Master Dictionary for all historical VEX seasons
+    private final java.util.Map<String, Integer> seasonMap = new java.util.LinkedHashMap<>();
 
     @FXML
     public void initialize() {
         setupDashboardTable();
         setupLeaderboardTable();
+        setupEventTable();
+
+        // Populate all seasons in order from newest to oldest
+        seasonMap.put("Push Back (25-26)", 197);
+        seasonMap.put("High Stakes (24-25)", 190);
+        seasonMap.put("Over Under (23-24)", 181);
+        seasonMap.put("Spin Up (22-23)", 173);
+        seasonMap.put("Tipping Point (21-22)", 154);
+        seasonMap.put("Change Up (20-21)", 139);
+        seasonMap.put("Tower Takeover (19-20)", 130);
+        seasonMap.put("Turning Point (18-19)", 125);
+        seasonMap.put("In the Zone (17-18)", 119);
+        seasonMap.put("Starstruck (16-17)", 115);
+        seasonMap.put("Nothing But Net (15-16)", 110);
+        seasonMap.put("Skyrise (14-15)", 102);
+        seasonMap.put("Toss Up (13-14)", 92);
+        seasonMap.put("Sack Attack (12-13)", 85);
+        seasonMap.put("Gateway (11-12)", 73);
+
+        seasonDropdown.getItems().addAll(seasonMap.keySet());
+        seasonDropdown.getSelectionModel().selectFirst();
+        seasonDropdown.setOnAction(e -> loadLeaderboardData());
 
         setupSearchHistoryPopup();
         searchButton.setOnAction(event -> handleSearch());
         btnLoadLeaderboard.setOnAction(event -> loadLeaderboardData());
+        eventSearchButton.setOnAction(event -> handleEventSearch());
 
         btnHowItWorks.setOnAction(event -> showEloExplanation());
         btnCloseOverlay.setOnAction(event -> hideEloExplanation());
 
         setupNavigationRouter();
         setupSocialLinks();
-
         playEntranceAnimation();
     }
 
@@ -122,47 +110,42 @@ public class MainController {
         dashRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
         skillsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        dashboardPlaceholder = new Label("Ready to query. Enter a Team ID above.");
-        dashboardPlaceholder.getStyleClass().add("placeholder-label");
-        skillsTable.setPlaceholder(dashboardPlaceholder);
-
         dashRankCol.setCellFactory(column -> new TableCell<SkillsRanking, Integer>() {
             @Override
             protected void updateItem(Integer rank, boolean empty) {
                 super.updateItem(rank, empty);
-                if (empty || rank == null) {
+                if (empty || rank == null || rank == 0) {
                     setText(null);
-                    getStyleClass().removeAll("rank-gold", "rank-green", "rank-standard");
+                    setStyle("");
                 } else {
-                    getStyleClass().removeAll("rank-gold", "rank-green", "rank-standard");
                     if (rank == 1) {
-                        getStyleClass().add("rank-gold");
                         setText("🏆 " + rank);
+                        setStyle("-fx-text-fill: #FFD700; -fx-font-weight: bold; -fx-alignment: center;");
                     } else if (rank <= 50) {
-                        getStyleClass().add("rank-green");
                         setText("🔥 " + rank);
+                        setStyle("-fx-text-fill: #00E676; -fx-font-weight: bold; -fx-alignment: center;");
                     } else {
-                        getStyleClass().add("rank-standard");
                         setText(String.valueOf(rank));
+                        setStyle("-fx-alignment: center;");
                     }
                 }
             }
         });
+
+        dashboardPlaceholder = new Label("Ready to query. Enter a Team ID above.");
+        dashboardPlaceholder.getStyleClass().add("placeholder-label");
+        skillsTable.setPlaceholder(dashboardPlaceholder);
     }
 
     private void setupLeaderboardTable() {
         lbRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
         lbTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamDisplay"));
         lbRecordCol.setCellValueFactory(new PropertyValueFactory<>("record"));
-        lbWpCol.setCellValueFactory(new PropertyValueFactory<>("wp"));
-        lbApCol.setCellValueFactory(new PropertyValueFactory<>("ap"));
-        lbSpCol.setCellValueFactory(new PropertyValueFactory<>("sp"));
-        lbTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("trueRankScore"));
+        lbTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("eloScore"));
 
         lbTeamCol.setPrefWidth(220.0);
         leaderboardTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        leaderboardPlaceholder = new Label("Click 'Load Event' to sequence match schedules and build MMR standings.");
+        leaderboardPlaceholder = new Label("Select a season and sync with MerStats Cloud.");
         leaderboardPlaceholder.getStyleClass().add("placeholder-label");
         leaderboardTable.setPlaceholder(leaderboardPlaceholder);
 
@@ -170,11 +153,7 @@ public class MainController {
             @Override
             protected void updateItem(Double mmr, boolean empty) {
                 super.updateItem(mmr, empty);
-
-                SeasonRanking teamData = null;
-                if (getTableRow() != null) {
-                    teamData = getTableRow().getItem();
-                }
+                SeasonRanking teamData = getTableRow() != null ? getTableRow().getItem() : null;
 
                 if (empty || mmr == null || teamData == null) {
                     setText(null);
@@ -183,17 +162,18 @@ public class MainController {
                     getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
 
                     int globalRank = teamData.getRank();
-
                     int totalTeams = getTableView().getItems().size();
-                    int domeThreshold = (int) Math.ceil(totalTeams * 0.07);
+
+                    // NEW: Updated to 0.005 for the ultra-exclusive top 0.5% threshold!
+                    int domeThreshold = (int) Math.ceil(totalTeams * 0.005);
 
                     if (totalTeams > 0 && globalRank <= Math.max(1, domeThreshold)) {
                         getStyleClass().add("tier-dome");
                         setText("⭐ The Dome (" + mmr + ")");
-                    } else if (mmr >= 1600.0) {
+                    } else if (mmr >= 1900.0) {
                         getStyleClass().add("tier-titanium");
                         setText("💠 Titanium (" + mmr + ")");
-                    } else if (mmr >= 1550.0) {
+                    } else if (mmr >= 1700.0) {
                         getStyleClass().add("tier-carbon");
                         setText("⚡ Carbon Fiber (" + mmr + ")");
                     } else if (mmr >= 1500.0) {
@@ -207,57 +187,11 @@ public class MainController {
             }
         });
 
-        leaderboardTable.setRowFactory(tv -> {
-            TableRow<SeasonRanking> row = new TableRow<>();
-            ContextMenu contextMenu = new ContextMenu();
-
-            MenuItem viewDashboardItem = new MenuItem("🔍 View Full Dashboard");
-            MenuItem copyIdItem = new MenuItem("📋 Copy Team ID");
-
-            viewDashboardItem.setOnAction(event -> {
-                SeasonRanking selectedTeam = row.getItem();
-                if (selectedTeam != null) {
-                    teamInput.setText(selectedTeam.getTeamNumber());
-                    switchView(contentCard, btnDashboard, "");
-                    handleSearch();
-                }
-            });
-
-            copyIdItem.setOnAction(event -> {
-                SeasonRanking selectedTeam = row.getItem();
-                if (selectedTeam != null) {
-                    Clipboard clipboard = Clipboard.getSystemClipboard();
-                    ClipboardContent content = new ClipboardContent();
-                    content.putString(selectedTeam.getTeamNumber());
-                    clipboard.setContent(content);
-                }
-            });
-
-            contextMenu.getItems().addAll(viewDashboardItem, copyIdItem);
-
-            row.emptyProperty().addListener((obs, wasEmpty, isNowEmpty) -> {
-                if (isNowEmpty) {
-                    row.setContextMenu(null);
-                } else {
-                    row.setContextMenu(contextMenu);
-                }
-            });
-            return row;
-        });
-
         FilteredList<SeasonRanking> filteredData = new FilteredList<>(masterLeaderboardData, b -> true);
-
         lbSearchInput.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(ranking -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                if (ranking.getTeamDisplay().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                }
-                return false;
+                if (newValue == null || newValue.isEmpty()) return true;
+                return ranking.getTeamDisplay().toLowerCase().contains(newValue.toLowerCase());
             });
         });
 
@@ -266,16 +200,55 @@ public class MainController {
         leaderboardTable.setItems(sortedData);
     }
 
+    private void setupEventTable() {
+        evRankCol.setCellValueFactory(new PropertyValueFactory<>("rank"));
+        evTeamCol.setCellValueFactory(new PropertyValueFactory<>("teamDisplay"));
+        evRecordCol.setCellValueFactory(new PropertyValueFactory<>("record"));
+        evTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("eloScore"));
+
+        eventTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        evTrueRankCol.setCellFactory(column -> new TableCell<SeasonRanking, Double>() {
+            @Override
+            protected void updateItem(Double score, boolean empty) {
+                super.updateItem(score, empty);
+                SeasonRanking teamData = getTableRow() != null ? getTableRow().getItem() : null;
+
+                if (empty || score == null || teamData == null) {
+                    setText(null);
+                    getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
+                } else {
+                    getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
+                    int eventRank = teamData.getRank();
+
+                    if (eventRank == 1) {
+                        getStyleClass().add("tier-dome");
+                        setText(String.format("⭐ Event Champion (%.1f)", score));
+                    } else if (score >= 1600.0) {
+                        getStyleClass().add("tier-titanium");
+                        setText(String.format("💠 Titanium (%.1f)", score));
+                    } else if (score >= 1550.0) {
+                        getStyleClass().add("tier-carbon");
+                        setText(String.format("⚡ Carbon Fiber (%.1f)", score));
+                    } else if (score >= 1500.0) {
+                        getStyleClass().add("tier-aluminum");
+                        setText(String.format("🔧 Aluminum (%.1f)", score));
+                    } else {
+                        getStyleClass().add("tier-steel");
+                        setText(String.format("🔩 Steel (%.1f)", score));
+                    }
+                }
+            }
+        });
+    }
+
     private void setupSocialLinks() {
         btnGithub.setOnAction(e -> {
             try {
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     Desktop.getDesktop().browse(new URI("https://github.com/Meeerrr"));
                 }
-            } catch (Exception ex) {
-                System.err.println("Could not open GitHub link.");
-                ex.printStackTrace();
-            }
+            } catch (Exception ex) { ex.printStackTrace(); }
         });
     }
 
@@ -284,7 +257,7 @@ public class MainController {
         btnSkills.setOnMouseClicked(e -> switchView(placeholderCard, btnSkills, "Skills Analytics"));
         btnH2H.setOnMouseClicked(e -> switchView(placeholderCard, btnH2H, "Head-to-Head Simulator"));
         btnAwards.setOnMouseClicked(e -> switchView(placeholderCard, btnAwards, "Awards Archive"));
-        btnEvents.setOnMouseClicked(e -> switchView(placeholderCard, btnEvents, "Event Statistics"));
+        btnEvents.setOnMouseClicked(e -> switchView(eventCard, btnEvents, "Event Statistics"));
         btnLeaderboards.setOnMouseClicked(e -> switchView(leaderboardCard, btnLeaderboards, ""));
         btnAbout.setOnMouseClicked(e -> switchView(aboutCard, btnAbout, ""));
         btnSettings.setOnMouseClicked(e -> switchView(placeholderCard, btnSettings, "System Settings"));
@@ -292,27 +265,16 @@ public class MainController {
 
     private void switchView(VBox targetCard, Label activeNavLabel, String pageTitle) {
         if (activeNavLabel.getStyleClass().contains("nav-link-active")) return;
-
-        VBox[] allCards = {contentCard, leaderboardCard, aboutCard, placeholderCard};
-        for (VBox card : allCards) {
-            card.setVisible(false);
-            card.setManaged(false);
-        }
-
-        if (targetCard == placeholderCard) {
-            placeholderTitle.setText(pageTitle);
-        }
-
+        VBox[] allCards = {contentCard, leaderboardCard, eventCard, aboutCard, placeholderCard};
+        for (VBox card : allCards) { card.setVisible(false); card.setManaged(false); }
+        if (targetCard == placeholderCard) { placeholderTitle.setText(pageTitle); }
         targetCard.setVisible(true);
         targetCard.setManaged(true);
         playCardAnimation(targetCard);
-
         Label[] allNavs = {btnDashboard, btnSkills, btnH2H, btnAwards, btnEvents, btnLeaderboards, btnAbout, btnSettings};
         for (Label nav : allNavs) {
             nav.getStyleClass().remove("nav-link-active");
-            if (!nav.getStyleClass().contains("nav-link")) {
-                nav.getStyleClass().add("nav-link");
-            }
+            if (!nav.getStyleClass().contains("nav-link")) nav.getStyleClass().add("nav-link");
         }
         activeNavLabel.getStyleClass().remove("nav-link");
         activeNavLabel.getStyleClass().add("nav-link-active");
@@ -340,32 +302,19 @@ public class MainController {
 
     private void loadLeaderboardData() {
         btnLoadLeaderboard.setDisable(true);
-        btnLoadLeaderboard.setText("Calculating MMR...");
+        btnLoadLeaderboard.setText("Connecting to Cloud...");
         lbLoadingBar.setVisible(true);
 
         masterLeaderboardData.clear();
         lbSearchInput.clear();
-        leaderboardTitle.setText("Extracting Event Data...");
-
-        String rawInput = eventSkuInput.getText().trim();
-        String finalSku = DEFAULT_EVENT_SKU;
-
-        if (!rawInput.isEmpty()) {
-            Matcher m = Pattern.compile("RE-[A-Za-z0-9]+-[0-9]+-[0-9]+").matcher(rawInput);
-            if (m.find()) {
-                finalSku = m.group();
-            } else {
-                finalSku = rawInput;
-            }
-        }
-
-        final String apiTarget = finalSku;
+        leaderboardTitle.setText("MerStats Global TrueRank");
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                String fetchedName = apiService.getEventNameBySku(apiTarget);
-                Platform.runLater(() -> leaderboardTitle.setText(fetchedName));
-                return apiService.getProcessedEloRankings(apiTarget);
+                String selectedSeason = seasonDropdown.getValue();
+                int seasonId = seasonMap.getOrDefault(selectedSeason, 199);
+
+                return apiService.getGlobalLeaderboard(seasonId);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -373,47 +322,65 @@ public class MainController {
         }).thenAccept((List<SeasonRanking> rankingsData) -> {
             Platform.runLater(() -> {
                 btnLoadLeaderboard.setDisable(false);
-                btnLoadLeaderboard.setText("Load Event");
+                btnLoadLeaderboard.setText("Refresh Leaderboard");
                 lbLoadingBar.setVisible(false);
 
                 if (rankingsData != null && !rankingsData.isEmpty()) {
-
-                    rankingsData.sort((r1, r2) -> Double.compare(r2.getTrueRankScore(), r1.getTrueRankScore()));
-
                     for (int i = 0; i < rankingsData.size(); i++) {
                         rankingsData.get(i).setRank(i + 1);
                     }
-
                     masterLeaderboardData.setAll(rankingsData);
-
                     leaderboardTable.setOpacity(0);
-                    FadeTransition fade = new FadeTransition(Duration.millis(500), leaderboardTable);
+                    FadeTransition fade = new FadeTransition(Duration.millis(400), leaderboardTable);
                     fade.setToValue(1);
                     fade.play();
-
                 } else {
-                    leaderboardPlaceholder.setText("Error: Failed to fetch ranking data. Please verify the URL or SKU.");
-                    leaderboardTitle.setText("Global TrueRank Leaderboard");
+                    leaderboardPlaceholder.setText("Error: Failed to connect to MerStats Cloud.");
                 }
             });
         });
     }
 
-    private void setupSearchHistoryPopup() {
-        ContextMenu historyMenu = new ContextMenu();
-        teamInput.setOnMouseClicked(event -> {
-            if (!recentSearches.isEmpty()) {
-                historyMenu.getItems().clear();
-                for (String search : recentSearches) {
-                    MenuItem item = new MenuItem(search);
-                    item.setOnAction(e -> {
-                        teamInput.setText(search);
-                        handleSearch();
-                    });
-                    historyMenu.getItems().add(item);
+    private void handleEventSearch() {
+        String input = eventInput.getText().trim();
+        if (input.isEmpty()) return;
+
+        String sku = input;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("RE-[A-Za-z0-9]+-\\d{2}-\\d{4}").matcher(input);
+        if (m.find()) {
+            sku = m.group();
+            eventInput.setText(sku);
+        }
+
+        final String targetSku = sku;
+
+        eventSearchButton.setDisable(true);
+        eventSearchButton.setText("Analyzing...");
+        eventLoadingBar.setVisible(true);
+        eventTable.getItems().clear();
+
+        CompletableFuture.supplyAsync(() -> {
+            try { return apiService.getEventTrueRank(targetSku); }
+            catch (Exception ex) { ex.printStackTrace(); return null; }
+        }).thenAccept(eventRankings -> {
+            Platform.runLater(() -> {
+                eventSearchButton.setDisable(false);
+                eventSearchButton.setText("Analyze Event");
+                eventLoadingBar.setVisible(false);
+
+                if (eventRankings != null && !eventRankings.isEmpty()) {
+                    for (int i = 0; i < eventRankings.size(); i++) {
+                        eventRankings.get(i).setRank(i + 1);
+                    }
+                    eventTable.getItems().setAll(eventRankings);
+                    eventTable.setOpacity(0);
+                    FadeTransition fade = new FadeTransition(Duration.millis(400), eventTable);
+                    fade.setToValue(1);
+                    fade.play();
+                } else {
+                    eventInput.setText("Error: Event not found or no matches played.");
                 }
-                historyMenu.show(teamInput, javafx.geometry.Side.BOTTOM, 0, 0);
-            }
+            });
         });
     }
 
@@ -423,9 +390,7 @@ public class MainController {
 
         if (!recentSearches.contains(teamNumber)) {
             recentSearches.add(0, teamNumber);
-            if (recentSearches.size() > 5) {
-                recentSearches.remove(5);
-            }
+            if (recentSearches.size() > 5) recentSearches.remove(5);
         }
 
         searchButton.setDisable(true);
@@ -434,9 +399,7 @@ public class MainController {
         dashboardPlaceholder.setText("Fetching telemetry for " + teamNumber + "...");
         loadingBar.setVisible(true);
 
-        if (logoRotation == null) {
-            logoRotation = createLogoAnimation();
-        }
+        if (logoRotation == null) logoRotation = createLogoAnimation();
         logoRotation.play();
         contentCard.getStyleClass().add("logo-active-pulse");
 
@@ -444,45 +407,44 @@ public class MainController {
             try {
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
                 if (team != null) {
+                    Double globalElo = apiService.getTeamGlobalElo(team.getResolvedNumber());
                     Platform.runLater(() -> {
                         dashboardTitle.setText("Team " + team.getResolvedNumber() + " - " + team.getResolvedName());
-                        dashboardSubtitle.setText("Grade Level: " + team.getGrade());
+                        dashboardSubtitle.getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
+
+                        if (globalElo != null) {
+                            String tierText = "🔩 Steel";
+                            String styleClass = "tier-steel";
+                            if (globalElo >= 2000.0) { tierText = "⭐ The Dome"; styleClass = "tier-dome"; }
+                            else if (globalElo >= 1900.0) { tierText = "💠 Titanium"; styleClass = "tier-titanium"; }
+                            else if (globalElo >= 1700.0) { tierText = "⚡ Carbon Fiber"; styleClass = "tier-carbon"; }
+                            else if (globalElo >= 1500.0) { tierText = "🔧 Aluminum"; styleClass = "tier-aluminum"; }
+                            dashboardSubtitle.setText("Grade: " + team.getGrade() + "   •   " + tierText + " (" + globalElo + ")");
+                            dashboardSubtitle.getStyleClass().add(styleClass);
+                        } else {
+                            dashboardSubtitle.setText("Grade: " + team.getGrade() + "   •   No TrueRank Data");
+                        }
                     });
                     return apiService.getSkillsByTeamId(team.getId());
                 } else {
                     Platform.runLater(() -> {
                         dashboardTitle.setText("Team Not Found");
                         dashboardSubtitle.setText("Please verify the ID and try again.");
-                        dashboardPlaceholder.setText("Error: Team '" + teamNumber + "' does not exist in the database.");
-
-                        loadingBar.setVisible(false);
-                        if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-                        contentCard.getStyleClass().remove("logo-active-pulse");
-                        searchButton.setDisable(false);
-                        searchButton.setText("Search");
+                        dashboardPlaceholder.setText("Error: Team '" + teamNumber + "' does not exist.");
+                        resetSearchUI();
                     });
                     return null;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 Platform.runLater(() -> {
-                    dashboardPlaceholder.setText("Connection Error. Please check your internet and try again.");
-                    loadingBar.setVisible(false);
-                    if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-                    contentCard.getStyleClass().remove("logo-active-pulse");
-                    searchButton.setDisable(false);
-                    searchButton.setText("Search");
+                    dashboardPlaceholder.setText("Connection Error. Please check your internet.");
+                    resetSearchUI();
                 });
                 return null;
             }
         }).thenAccept((List<SkillsRanking> skillsData) -> {
             Platform.runLater(() -> {
-                loadingBar.setVisible(false);
-                if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-                contentCard.getStyleClass().remove("logo-active-pulse");
-                searchButton.setDisable(false);
-                searchButton.setText("Search");
-
+                resetSearchUI();
                 if (skillsData != null && !skillsData.isEmpty()) {
                     skillsData.sort((rank1, rank2) -> {
                         int seasonCompare = Integer.compare(rank2.getSeasonId(), rank1.getSeasonId());
@@ -492,7 +454,6 @@ public class MainController {
                         return Integer.compare(rank2.getScore(), rank1.getScore());
                     });
                     skillsTable.getItems().setAll(skillsData);
-
                     skillsTable.setOpacity(0.0);
                     skillsTable.setTranslateY(20.0);
                     FadeTransition tableFade = new FadeTransition(Duration.millis(600), skillsTable);
@@ -501,7 +462,6 @@ public class MainController {
                     tableSlide.setToY(0.0);
                     tableFade.play();
                     tableSlide.play();
-
                 } else if (skillsData != null && skillsData.isEmpty()) {
                     dashboardPlaceholder.setText("No skills runs recorded for " + teamNumber + ".");
                 }
@@ -530,26 +490,22 @@ public class MainController {
         eloOverlay.setVisible(true);
         eloOverlay.setManaged(true);
 
+    private void showEloExplanation() {
+        eloOverlay.setOpacity(0.0); eloOverlay.setVisible(true); eloOverlay.setManaged(true);
         FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
-        fade.setToValue(1.0);
-        fade.play();
+        fade.setToValue(1.0); fade.play();
     }
 
     private void hideEloExplanation() {
         FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
         fade.setToValue(0.0);
-        fade.setOnFinished(e -> {
-            eloOverlay.setVisible(false);
-            eloOverlay.setManaged(false);
-        });
+        fade.setOnFinished(e -> { eloOverlay.setVisible(false); eloOverlay.setManaged(false); });
         fade.play();
     }
 
     private RotateTransition createLogoAnimation() {
         RotateTransition rt = new RotateTransition(Duration.millis(800), mainLogo);
-        rt.setByAngle(360);
-        rt.setCycleCount(Animation.INDEFINITE);
-        rt.setInterpolator(Interpolator.LINEAR);
+        rt.setByAngle(360); rt.setCycleCount(Animation.INDEFINITE); rt.setInterpolator(Interpolator.LINEAR);
         return rt;
     }
 }
