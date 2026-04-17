@@ -406,7 +406,14 @@ public class MainController {
             try {
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
                 if (team != null) {
-                    Double globalElo = apiService.getTeamGlobalElo(team.getResolvedNumber());
+
+                    // 🔥 THE FIX: Grab the current season ID from the dropdown to pass to the API
+                    String selectedSeason = seasonDropdown.getValue();
+                    int currentSeasonId = seasonMap.getOrDefault(selectedSeason, 197);
+
+                    // Pass BOTH the team number and the season ID
+                    Double globalElo = apiService.getTeamGlobalElo(team.getResolvedNumber(), currentSeasonId);
+
                     Platform.runLater(() -> {
                         dashboardTitle.setText("Team " + team.getResolvedNumber() + " - " + team.getResolvedName());
                         dashboardSubtitle.getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
