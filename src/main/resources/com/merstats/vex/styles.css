@@ -345,3 +345,39 @@
 .doc-scroll-pane .viewport {
     -fx-background-color: transparent;
 }
+/* ========================================= */
+/* DARK THEME                  */
+/* ========================================= */
+
+.dark-theme {
+    -fx-background-color: #0f172a; /* Deep dark blue/black background */
+}
+
+/* Invert all standard text to white */
+.dark-theme .label {
+    -fx-text-fill: #f8fafc;
+}
+
+/* Make Cards Dark */
+.dark-theme .content-card,
+.dark-theme .sidebar {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+}
+
+/* Make Tables Dark */
+.dark-theme .table-view {
+    -fx-background-color: #1e293b;
+}
+.dark-theme .table-view .column-header {
+    -fx-background-color: #0f172a;
+}
+.dark-theme .table-view .table-cell {
+    -fx-text-fill: #f8fafc;
+}
+.dark-theme .table-row-cell:odd {
+    -fx-background-color: #1e293b;
+}
+.dark-theme .table-row-cell:even {
+    -fx-background-color: #0f172a;
+}

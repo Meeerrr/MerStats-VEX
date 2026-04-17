@@ -18,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -29,30 +30,25 @@ import java.util.concurrent.CompletableFuture;
 
 public class MainController {
 
-    // Nav Buttons
+    @FXML private BorderPane rootPane;
+    @FXML private VBox sidebar, contentCard, leaderboardCard, eventCard, aboutCard, settingsCard, placeholderCard, eloOverlay;
     @FXML private Label btnDashboard, btnSkills, btnH2H, btnAwards, btnEvents, btnLeaderboards, btnAbout, btnSettings;
-
-    // View Cards
-    @FXML private VBox sidebar, contentCard, leaderboardCard, eventCard, aboutCard, placeholderCard, eloOverlay;
     @FXML private Label placeholderTitle, dashboardTitle, dashboardSubtitle, leaderboardTitle;
-    @FXML private Button btnCloseOverlay, btnGithub, searchButton, btnLoadLeaderboard, btnHowItWorks, eventSearchButton;
+    @FXML private Button btnCloseOverlay, btnGithub, searchButton, btnLoadLeaderboard, btnHowItWorks, eventSearchButton, btnThemeToggle;
     @FXML private ImageView mainLogo;
     @FXML private TextField teamInput, lbSearchInput, eventInput;
     @FXML private ProgressBar loadingBar, lbLoadingBar, eventLoadingBar;
     @FXML private ComboBox<String> seasonDropdown;
 
-    // Dashboard Elements
     @FXML private TableView<SkillsRanking> skillsTable;
     @FXML private TableColumn<SkillsRanking, String> seasonCol, eventCol, typeCol;
     @FXML private TableColumn<SkillsRanking, Integer> attemptCol, scoreCol, dashRankCol;
 
-    // Leaderboard Elements
     @FXML private TableView<SeasonRanking> leaderboardTable;
     @FXML private TableColumn<SeasonRanking, Integer> lbRankCol;
     @FXML private TableColumn<SeasonRanking, String> lbTeamCol, lbRecordCol;
     @FXML private TableColumn<SeasonRanking, Double> lbTrueRankCol, lbOprCol;
 
-    // Event Statistics Elements
     @FXML private TableView<SeasonRanking> eventTable;
     @FXML private TableColumn<SeasonRanking, Integer> evRankCol;
     @FXML private TableColumn<SeasonRanking, String> evTeamCol, evRecordCol;
@@ -63,9 +59,8 @@ public class MainController {
     private final List<String> recentSearches = new ArrayList<>();
     private RotateTransition logoRotation;
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
-
-    // The Master Dictionary for all historical VEX seasons
     private final java.util.Map<String, Integer> seasonMap = new java.util.LinkedHashMap<>();
+    private boolean isDarkMode = false;
 
     @FXML
     public void initialize() {
@@ -73,7 +68,6 @@ public class MainController {
         setupLeaderboardTable();
         setupEventTable();
 
-        // Populate all seasons in order from newest to oldest
         seasonMap.put("Push Back (25-26)", 204);
         seasonMap.put("High Stakes (24-25)", 190);
         seasonMap.put("Over Under (23-24)", 181);
@@ -101,6 +95,7 @@ public class MainController {
 
         btnHowItWorks.setOnAction(event -> showEloExplanation());
         btnCloseOverlay.setOnAction(event -> hideEloExplanation());
+        btnThemeToggle.setOnAction(e -> toggleTheme());
 
         setupNavigationRouter();
         setupSocialLinks();
@@ -121,8 +116,7 @@ public class MainController {
             protected void updateItem(Integer rank, boolean empty) {
                 super.updateItem(rank, empty);
                 if (empty || rank == null || rank == 0) {
-                    setText(null);
-                    setStyle("");
+                    setText(null); setStyle("");
                 } else {
                     if (rank == 1) {
                         setText("🏆 " + rank);
@@ -179,8 +173,6 @@ public class MainController {
 
                     int globalRank = teamData.getRank();
                     int totalTeams = getTableView().getItems().size();
-
-                    // The Dome tier exclusively reserved for the Top 0.5%
                     int domeThreshold = (int) Math.ceil(totalTeams * 0.005);
 
                     if (totalTeams > 0 && globalRank <= Math.max(1, domeThreshold)) {
@@ -222,7 +214,6 @@ public class MainController {
         evRecordCol.setCellValueFactory(new PropertyValueFactory<>("record"));
         evTrueRankCol.setCellValueFactory(new PropertyValueFactory<>("eloScore"));
         evOprCol.setCellValueFactory(new PropertyValueFactory<>("opr"));
-
         eventTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         evOprCol.setCellFactory(column -> new TableCell<SeasonRanking, Double>() {
@@ -286,12 +277,12 @@ public class MainController {
         btnEvents.setOnMouseClicked(e -> switchView(eventCard, btnEvents, "Event Statistics"));
         btnLeaderboards.setOnMouseClicked(e -> switchView(leaderboardCard, btnLeaderboards, ""));
         btnAbout.setOnMouseClicked(e -> switchView(aboutCard, btnAbout, ""));
-        btnSettings.setOnMouseClicked(e -> switchView(placeholderCard, btnSettings, "System Settings"));
+        btnSettings.setOnMouseClicked(e -> switchView(settingsCard, btnSettings, ""));
     }
 
     private void switchView(VBox targetCard, Label activeNavLabel, String pageTitle) {
         if (activeNavLabel.getStyleClass().contains("nav-link-active")) return;
-        VBox[] allCards = {contentCard, leaderboardCard, eventCard, aboutCard, placeholderCard};
+        VBox[] allCards = {contentCard, leaderboardCard, eventCard, aboutCard, settingsCard, placeholderCard};
         for (VBox card : allCards) { card.setVisible(false); card.setManaged(false); }
         if (targetCard == placeholderCard) { placeholderTitle.setText(pageTitle); }
         targetCard.setVisible(true);
@@ -313,16 +304,13 @@ public class MainController {
         fade.setToValue(1.0);
         TranslateTransition slide = new TranslateTransition(Duration.millis(500), card);
         slide.setToY(0.0);
-        fade.play();
-        slide.play();
+        fade.play(); slide.play();
     }
 
     private void playEntranceAnimation() {
         sidebar.setOpacity(0.0);
         FadeTransition sidebarFade = new FadeTransition(Duration.millis(800), sidebar);
-        sidebarFade.setFromValue(0.0);
-        sidebarFade.setToValue(1.0);
-        sidebarFade.play();
+        sidebarFade.setFromValue(0.0); sidebarFade.setToValue(1.0); sidebarFade.play();
         playCardAnimation(contentCard);
     }
 
@@ -339,12 +327,8 @@ public class MainController {
             try {
                 String selectedSeason = seasonDropdown.getValue();
                 int seasonId = seasonMap.getOrDefault(selectedSeason, 204);
-
                 return apiService.getGlobalLeaderboard(seasonId);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
+            } catch (Exception e) { e.printStackTrace(); return null; }
         }).thenAccept((List<SeasonRanking> rankingsData) -> {
             Platform.runLater(() -> {
                 btnLoadLeaderboard.setDisable(false);
@@ -352,14 +336,11 @@ public class MainController {
                 lbLoadingBar.setVisible(false);
 
                 if (rankingsData != null && !rankingsData.isEmpty()) {
-                    for (int i = 0; i < rankingsData.size(); i++) {
-                        rankingsData.get(i).setRank(i + 1);
-                    }
+                    for (int i = 0; i < rankingsData.size(); i++) rankingsData.get(i).setRank(i + 1);
                     masterLeaderboardData.setAll(rankingsData);
                     leaderboardTable.setOpacity(0);
                     FadeTransition fade = new FadeTransition(Duration.millis(400), leaderboardTable);
-                    fade.setToValue(1);
-                    fade.play();
+                    fade.setToValue(1); fade.play();
                 } else {
                     leaderboardPlaceholder.setText("Error: Failed to connect to MerStats Cloud.");
                 }
@@ -373,13 +354,9 @@ public class MainController {
 
         String sku = input;
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("RE-[A-Za-z0-9]+-\\d{2}-\\d{4}").matcher(input);
-        if (m.find()) {
-            sku = m.group();
-            eventInput.setText(sku);
-        }
+        if (m.find()) { sku = m.group(); eventInput.setText(sku); }
 
         final String targetSku = sku;
-
         eventSearchButton.setDisable(true);
         eventSearchButton.setText("Analyzing...");
         eventLoadingBar.setVisible(true);
@@ -395,14 +372,11 @@ public class MainController {
                 eventLoadingBar.setVisible(false);
 
                 if (eventRankings != null && !eventRankings.isEmpty()) {
-                    for (int i = 0; i < eventRankings.size(); i++) {
-                        eventRankings.get(i).setRank(i + 1);
-                    }
+                    for (int i = 0; i < eventRankings.size(); i++) eventRankings.get(i).setRank(i + 1);
                     eventTable.getItems().setAll(eventRankings);
                     eventTable.setOpacity(0);
                     FadeTransition fade = new FadeTransition(Duration.millis(400), eventTable);
-                    fade.setToValue(1);
-                    fade.play();
+                    fade.setToValue(1); fade.play();
                 } else {
                     eventInput.setText("Error: Event not found or no matches played.");
                 }
@@ -419,8 +393,7 @@ public class MainController {
             if (recentSearches.size() > 5) recentSearches.remove(5);
         }
 
-        searchButton.setDisable(true);
-        searchButton.setText("Searching...");
+        searchButton.setDisable(true); searchButton.setText("Searching...");
         skillsTable.getItems().clear();
         dashboardPlaceholder.setText("Fetching telemetry for " + teamNumber + "...");
         loadingBar.setVisible(true);
@@ -437,10 +410,8 @@ public class MainController {
                     Platform.runLater(() -> {
                         dashboardTitle.setText("Team " + team.getResolvedNumber() + " - " + team.getResolvedName());
                         dashboardSubtitle.getStyleClass().removeAll("tier-dome", "tier-titanium", "tier-carbon", "tier-aluminum", "tier-steel");
-
                         if (globalElo != null) {
-                            String tierText = "🔩 Steel";
-                            String styleClass = "tier-steel";
+                            String tierText = "🔩 Steel"; String styleClass = "tier-steel";
                             if (globalElo >= 2000.0) { tierText = "⭐ The Dome"; styleClass = "tier-dome"; }
                             else if (globalElo >= 1900.0) { tierText = "💠 Titanium"; styleClass = "tier-titanium"; }
                             else if (globalElo >= 1700.0) { tierText = "⚡ Carbon Fiber"; styleClass = "tier-carbon"; }
@@ -454,18 +425,14 @@ public class MainController {
                     return apiService.getSkillsByTeamId(team.getId());
                 } else {
                     Platform.runLater(() -> {
-                        dashboardTitle.setText("Team Not Found");
-                        dashboardSubtitle.setText("Please verify the ID and try again.");
+                        dashboardTitle.setText("Team Not Found"); dashboardSubtitle.setText("Please verify the ID and try again.");
                         dashboardPlaceholder.setText("Error: Team '" + teamNumber + "' does not exist.");
                         resetSearchUI();
                     });
                     return null;
                 }
             } catch (Exception e) {
-                Platform.runLater(() -> {
-                    dashboardPlaceholder.setText("Connection Error. Please check your internet.");
-                    resetSearchUI();
-                });
+                Platform.runLater(() -> { dashboardPlaceholder.setText("Connection Error."); resetSearchUI(); });
                 return null;
             }
         }).thenAccept((List<SkillsRanking> skillsData) -> {
@@ -480,14 +447,10 @@ public class MainController {
                         return Integer.compare(rank2.getScore(), rank1.getScore());
                     });
                     skillsTable.getItems().setAll(skillsData);
-                    skillsTable.setOpacity(0.0);
-                    skillsTable.setTranslateY(20.0);
-                    FadeTransition tableFade = new FadeTransition(Duration.millis(600), skillsTable);
-                    tableFade.setToValue(1.0);
-                    TranslateTransition tableSlide = new TranslateTransition(Duration.millis(600), skillsTable);
-                    tableSlide.setToY(0.0);
-                    tableFade.play();
-                    tableSlide.play();
+                    skillsTable.setOpacity(0.0); skillsTable.setTranslateY(20.0);
+                    FadeTransition tableFade = new FadeTransition(Duration.millis(600), skillsTable); tableFade.setToValue(1.0);
+                    TranslateTransition tableSlide = new TranslateTransition(Duration.millis(600), skillsTable); tableSlide.setToY(0.0);
+                    tableFade.play(); tableSlide.play();
                 } else if (skillsData != null && skillsData.isEmpty()) {
                     dashboardPlaceholder.setText("No skills runs recorded for " + teamNumber + ".");
                 }
@@ -514,21 +477,30 @@ public class MainController {
         loadingBar.setVisible(false);
         if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
         contentCard.getStyleClass().remove("logo-active-pulse");
-        searchButton.setDisable(false);
-        searchButton.setText("Search");
+        searchButton.setDisable(false); searchButton.setText("Search");
+    }
+
+    private void toggleTheme() {
+        isDarkMode = !isDarkMode;
+        if (isDarkMode) {
+            rootPane.getStyleClass().add("dark-theme");
+            btnThemeToggle.setText("☀️ Switch to Light Mode");
+            btnThemeToggle.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-cursor: hand;");
+        } else {
+            rootPane.getStyleClass().remove("dark-theme");
+            btnThemeToggle.setText("🌙 Switch to Dark Mode");
+            btnThemeToggle.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+        }
     }
 
     private void showEloExplanation() {
         eloOverlay.setOpacity(0.0); eloOverlay.setVisible(true); eloOverlay.setManaged(true);
-        FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
-        fade.setToValue(1.0); fade.play();
+        FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay); fade.setToValue(1.0); fade.play();
     }
 
     private void hideEloExplanation() {
-        FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay);
-        fade.setToValue(0.0);
-        fade.setOnFinished(e -> { eloOverlay.setVisible(false); eloOverlay.setManaged(false); });
-        fade.play();
+        FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay); fade.setToValue(0.0);
+        fade.setOnFinished(e -> { eloOverlay.setVisible(false); eloOverlay.setManaged(false); }); fade.play();
     }
 
     private RotateTransition createLogoAnimation() {
