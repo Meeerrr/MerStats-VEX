@@ -15,7 +15,7 @@ re_headers = {"Authorization": f"Bearer {ROBOT_EVENTS_KEY}", "Accept": "applicat
 supabase_headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "resolution=merge-duplicates"}
 
 TARGET_SEASONS = [197, 240, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
-ACTIVE_SEASONS = [197]
+ACTIVE_SEASONS = []
 
 def fetch_all_pages(base_url):
     results = []

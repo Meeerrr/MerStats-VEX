@@ -334,3 +334,14 @@
     -fx-font-weight: bold;
     -fx-background-radius: 6px;
 }
+/* Removes the ugly grey border and background from the documentation scroll pane */
+.doc-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.doc-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
