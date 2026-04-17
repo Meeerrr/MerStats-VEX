@@ -25,10 +25,10 @@ supabase_headers = {
 }
 
 # The complete array of historical seasons to process
-TARGET_SEASONS = [204, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+TARGET_SEASONS = [ 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73,197]
 
 # Ongoing seasons that should NOT be marked as completed yet
-ACTIVE_SEASONS = [190, 204]
+ACTIVE_SEASONS = [197]
 
 # --- HELPER FUNCTIONS ---
 def fetch_all_pages(base_url):
