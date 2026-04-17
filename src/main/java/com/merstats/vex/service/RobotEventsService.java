@@ -115,7 +115,6 @@ public class RobotEventsService {
     // ==========================================
 
     public List<SeasonRanking> getEventTrueRank(String sku) throws Exception {
-        // 1. Fetch Event ID from SKU
         String eventUrl = BASE_URL + "/events?sku[]=" + sku;
         HttpRequest evReq = HttpRequest.newBuilder().uri(URI.create(eventUrl)).header("Authorization", RE_API_KEY).GET().build();
         JsonNode evData = mapper.readTree(client.send(evReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
@@ -124,11 +123,9 @@ public class RobotEventsService {
         int eventId = evData.get(0).path("id").asInt();
         List<SeasonRanking> eventRankings = new ArrayList<>();
 
-        // 2. Loop through all divisions in the event
         for (JsonNode div : evData.get(0).path("divisions")) {
             int divId = div.path("id").asInt();
 
-            // 3. Fetch Roster & Initialize Teams
             HttpRequest rankReq = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/rankings?per_page=250")).header("Authorization", RE_API_KEY).GET().build();
             JsonNode rankData = mapper.readTree(client.send(rankReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
 
@@ -141,38 +138,75 @@ public class RobotEventsService {
                 team.setLosses(r.path("losses").asInt(0));
                 team.setTies(r.path("ties").asInt(0));
                 team.setRecord(team.getWins() + "-" + team.getLosses() + "-" + team.getTies());
-                team.setEloScore(1500.0); // Baseline Event Elo
-                team.setOpr(0.0);         // Baseline Event OPR
+                team.setEloScore(1500.0);
+                team.setOpr(0.0);
                 teamMap.put(team.getTeamNumber(), team);
             }
 
-            // 4. Fetch Matches & Calculate Elo
             HttpRequest matchReq = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/matches?per_page=250")).header("Authorization", RE_API_KEY).GET().build();
             JsonNode matchData = mapper.readTree(client.send(matchReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
 
-            for (JsonNode match : matchData) {
-                if (match.path("alliances").size() < 2) continue;
+            // 🔥 UPGRADE 1: The 3-Pass Simulation Loop to stabilize chronological bias
+            for (int pass = 0; pass < 3; pass++) {
+                // Reset Elo to 1500 before starting passes 2 and 3
+                if (pass > 0) {
+                    for (SeasonRanking t : teamMap.values()) t.setEloScore(1500.0);
+                }
 
-                JsonNode redAll = match.path("alliances").get(0).path("color").asText().equals("red") ? match.path("alliances").get(0) : match.path("alliances").get(1);
-                JsonNode blueAll = match.path("alliances").get(0).path("color").asText().equals("blue") ? match.path("alliances").get(0) : match.path("alliances").get(1);
+                for (JsonNode match : matchData) {
+                    if (match.path("alliances").size() < 2) continue;
 
-                int rs = redAll.path("score").asInt(0);
-                int bs = blueAll.path("score").asInt(0);
-                if (rs == 0 && bs == 0) continue; // Skip unplayed matches
+                    JsonNode redAll = match.path("alliances").get(0).path("color").asText().equals("red") ? match.path("alliances").get(0) : match.path("alliances").get(1);
+                    JsonNode blueAll = match.path("alliances").get(0).path("color").asText().equals("blue") ? match.path("alliances").get(0) : match.path("alliances").get(1);
 
-                double actR = rs > bs ? 1.0 : (rs == bs ? 0.5 : 0.0);
-                double mov = 1.0 + (double) Math.abs(rs - bs) / Math.max(rs + bs, 1);
+                    int rs = redAll.path("score").asInt(0);
+                    int bs = blueAll.path("score").asInt(0);
+                    if (rs == 0 && bs == 0) continue;
 
-                processAllianceElo(redAll, blueAll, teamMap, actR, 1.0 - actR, mov);
+                    double actR = rs > bs ? 1.0 : (rs == bs ? 0.5 : 0.0);
+
+                    // Slightly nerfed MOV so blowouts don't break the engine
+                    double mov = Math.log(1.0 + (double) Math.abs(rs - bs)) + 1.0;
+
+                    processAllianceElo(redAll, blueAll, teamMap, actR, 1.0 - actR, mov);
+                }
             }
 
-            // 5. Calculate Local OPR using Apache Commons Math
+            // Calculate OPR
             calculateEventOPR(matchData, teamMap);
+
+            // 🔥 UPGRADE 2: Z-Score Blending (70% Elo, 30% OPR)
+            double sumElo = 0, sumOpr = 0;
+            for (SeasonRanking t : teamMap.values()) {
+                sumElo += t.getEloScore();
+                sumOpr += t.getOpr();
+            }
+            double meanElo = sumElo / teamMap.size();
+            double meanOpr = sumOpr / teamMap.size();
+
+            double varElo = 0, varOpr = 0;
+            for (SeasonRanking t : teamMap.values()) {
+                varElo += Math.pow(t.getEloScore() - meanElo, 2);
+                varOpr += Math.pow(t.getOpr() - meanOpr, 2);
+            }
+            double stdElo = Math.max(Math.sqrt(varElo / teamMap.size()), 1.0);
+            double stdOpr = Math.max(Math.sqrt(varOpr / teamMap.size()), 1.0);
+
+            for (SeasonRanking t : teamMap.values()) {
+                double zElo = (t.getEloScore() - meanElo) / stdElo;
+                double zOpr = (t.getOpr() - meanOpr) / stdOpr;
+
+                // The Golden Ratio
+                double blendedZ = (zElo * 0.70) + (zOpr * 0.30);
+
+                // Re-map to the intuitive 1500 scale
+                double finalTrueRank = meanElo + (blendedZ * stdElo);
+                t.setEloScore(finalTrueRank);
+            }
 
             eventRankings.addAll(teamMap.values());
         }
 
-        // 6. Sort final list by Elo
         eventRankings.sort((t1, t2) -> Double.compare(t2.getEloScore(), t1.getEloScore()));
         return eventRankings;
     }
@@ -192,6 +226,8 @@ public class RobotEventsService {
 
         double redAvg = redT.stream().mapToDouble(SeasonRanking::getEloScore).average().orElse(1500.0);
         double blueAvg = blueT.stream().mapToDouble(SeasonRanking::getEloScore).average().orElse(1500.0);
+
+        // Expected outcome probability formula
         double expR = 1.0 / (1.0 + Math.pow(10.0, (blueAvg - redAvg) / 400.0));
 
         double rs = 32.0 * (actR - expR) * mov;
