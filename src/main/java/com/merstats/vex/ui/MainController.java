@@ -68,7 +68,7 @@ public class MainController {
         setupLeaderboardTable();
         setupEventTable();
 
-        seasonMap.put("Push Back (25-26)", 204);
+        seasonMap.put("Push Back (25-26)", 197);
         seasonMap.put("High Stakes (24-25)", 190);
         seasonMap.put("Over Under (23-24)", 181);
         seasonMap.put("Spin Up (22-23)", 173);
@@ -484,12 +484,11 @@ public class MainController {
         isDarkMode = !isDarkMode;
         if (isDarkMode) {
             rootPane.getStyleClass().add("dark-theme");
-            btnThemeToggle.setText("☀️ Switch to Light Mode");
-            btnThemeToggle.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-cursor: hand;");
+            btnThemeToggle.setText("Switch to Light Mode");
+            // REMOVE any btnThemeToggle.setStyle(...) calls here!
         } else {
             rootPane.getStyleClass().remove("dark-theme");
-            btnThemeToggle.setText("🌙 Switch to Dark Mode");
-            btnThemeToggle.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+            btnThemeToggle.setText("Switch to Dark Mode");
         }
     }
 
