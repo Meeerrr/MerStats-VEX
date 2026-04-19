@@ -23,7 +23,7 @@ supabase_headers = {
     "Prefer": "resolution=merge-duplicates" # Crucial: Allows safe re-runs
 }
 
-TARGET_SEASONS = [197, 240, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+TARGET_SEASONS = [197, 190, 204]
 
 def fetch_all_pages(base_url):
     """Handles pagination and aggressive rate limiting from RobotEvents"""
@@ -102,12 +102,38 @@ def build_cache():
             for div in event.get('divisions', []):
                 div_matches = fetch_all_pages(f"https://www.robotevents.com/api/v2/events/{event['id']}/divisions/{div['id']}/matches?per_page=250")
 
-                # Format for Supabase DB
+                # Format and Micro-Compress for Supabase DB
                 for m in div_matches:
+                    alliances = m.get("alliances", [])
+                    if len(alliances) < 2:
+                        continue # Skip invalid matches
+
+                    # Sort alliances safely (RobotEvents sometimes scrambles the array order)
+                    red_all = alliances[0] if alliances[0].get("color") == "red" else alliances[1]
+                    blue_all = alliances[0] if alliances[0].get("color") == "blue" else alliances[1]
+
+                    red_score = red_all.get("score", 0)
+                    blue_score = blue_all.get("score", 0)
+
+                    # Skip unplayed matches
+                    if red_score == 0 and blue_score == 0:
+                        continue
+
+                    red_teams = [t.get("team", {}).get("name") for t in red_all.get("teams", [])]
+                    blue_teams = [t.get("team", {}).get("name") for t in blue_all.get("teams", [])]
+
+                    # 🔬 THE MICRO-JSON PAYLOAD
+                    micro_match = {
+                        "rs": red_score,
+                        "rt": red_teams,
+                        "bs": blue_score,
+                        "bt": blue_teams
+                    }
+
                     matches_payload.append({
                         "id": m["id"],
                         "season_id": season_id,
-                        "match_data": m
+                        "match_data": micro_match
                     })
 
             time.sleep(1) # Be nice to the API between events
