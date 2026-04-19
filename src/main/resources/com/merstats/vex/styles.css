@@ -10,12 +10,8 @@
 }
 
 /* ========================================== */
-/* SIDEBAR (LEFT NAVIGATION)                  */
+/* TYPOGRAPHY & BRANDING                      */
 /* ========================================== */
-.sidebar {
-    -fx-background-color: #0f172a;
-}
-
 .logo-text-primary {
     -fx-text-fill: #ffffff;
     -fx-font-size: 26px;
@@ -26,6 +22,22 @@
     -fx-text-fill: #f97316;
     -fx-font-size: 26px;
     -fx-font-weight: 900;
+}
+
+#mainLogo {
+    -fx-effect: null;
+    transition: -fx-effect 0.2s;
+}
+
+.logo-active-pulse #mainLogo {
+    -fx-effect: dropshadow(three-pass-box, #4f46e5, 25, 0.5, 0, 0);
+}
+
+/* ========================================== */
+/* SIDEBAR (LEFT NAVIGATION)                  */
+/* ========================================== */
+.sidebar {
+    -fx-background-color: #0f172a;
 }
 
 .nav-section-header {
@@ -71,7 +83,7 @@
 }
 
 /* ========================================== */
-/* MAIN CONTENT CARD                          */
+/* MAIN CONTENT CARDS                         */
 /* ========================================== */
 .content-card {
     -fx-background-color: #ffffff;
@@ -137,7 +149,7 @@
 }
 
 /* ========================================== */
-/* TABLE STYLING (BEAUTIFIED)                 */
+/* TABLE STYLING                              */
 /* ========================================== */
 .table-view {
     -fx-background-color: transparent;
@@ -179,25 +191,43 @@
     -fx-background-color: transparent;
     -fx-pref-width: 12px;
 }
+
 .table-view .scroll-bar:vertical .thumb {
     -fx-background-color: #cbd5e1;
     -fx-background-radius: 6px;
     -fx-border-color: transparent;
 }
+
 .table-view .scroll-bar:horizontal {
     -fx-background-color: transparent;
     -fx-pref-height: 12px;
 }
+
 .table-view .scroll-bar:horizontal .thumb {
     -fx-background-color: #cbd5e1;
     -fx-background-radius: 6px;
 }
+
 .table-view .corner {
     -fx-background-color: transparent;
 }
 
 /* ========================================== */
-/* EMPTY STATE (PLACEHOLDER)                  */
+/* SCROLL PANES                               */
+/* ========================================== */
+.doc-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.doc-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ========================================== */
+/* UTILITIES & STATES                         */
 /* ========================================== */
 .placeholder-label {
     -fx-text-fill: #64748b;
@@ -212,26 +242,31 @@
     -fx-border-style: dashed;
 }
 
-/* ========================================== */
-/* CONDITIONAL FORMATTING & ANIMATIONS        */
-/* ========================================== */
+.loading-bar {
+    -fx-min-height: 3px;
+    -fx-pref-height: 3px;
+    -fx-max-height: 3px;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.loading-bar .track {
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 5px;
+}
+
+.loading-bar .bar {
+    -fx-background-color: #4f46e5;
+    -fx-background-radius: 5px;
+    -fx-padding: 2px;
+}
+
+/* --- Rank Classes --- */
 .rank-gold { -fx-text-fill: #eab308; -fx-font-weight: 900; -fx-font-size: 15px; }
 .rank-green { -fx-text-fill: #22c55e; -fx-font-weight: 800; }
 .rank-standard { -fx-text-fill: #475569; -fx-font-weight: 600; }
 
-.loading-bar {
-    -fx-min-height: 3px; -fx-pref-height: 3px; -fx-max-height: 3px;
-    -fx-border-color: transparent; -fx-background-color: transparent;
-}
-.loading-bar .track { -fx-background-color: #e2e8f0; -fx-background-radius: 5px; }
-.loading-bar .bar { -fx-background-color: #4f46e5; -fx-background-radius: 5px; -fx-padding: 2px; }
-
-#mainLogo { -fx-effect: null; transition: -fx-effect 0.2s; }
-.logo-active-pulse #mainLogo { -fx-effect: dropshadow(three-pass-box, #4f46e5, 25, 0.5, 0, 0); }
-
-/* ========================================== */
-/* TRUERANK MMR TIERS (LEADERBOARD)           */
-/* ========================================== */
+/* --- Leaderboard Tiers --- */
 .tier-dome { -fx-text-fill: #f59e0b; -fx-font-weight: 900; -fx-font-size: 15px; }
 .tier-titanium { -fx-text-fill: #6366f1; -fx-font-weight: 800; }
 .tier-carbon { -fx-text-fill: #0f172a; -fx-font-weight: 800; }
@@ -246,16 +281,19 @@
     -fx-font-weight: 900;
     -fx-text-fill: #0f172a;
 }
+
 .about-role {
     -fx-font-size: 16px;
     -fx-text-fill: #4f46e5;
     -fx-font-weight: bold;
 }
+
 .about-bio {
     -fx-font-size: 15px;
     -fx-text-fill: #64748b;
     -fx-line-spacing: 5px;
 }
+
 .social-button {
     -fx-background-color: #f1f5f9;
     -fx-text-fill: #0f172a;
@@ -264,15 +302,16 @@
     -fx-background-radius: 8px;
     -fx-cursor: hand;
 }
+
 .social-button:hover {
     -fx-background-color: #e2e8f0;
 }
 
 /* ========================================== */
-/* IN-APP OVERLAY STYLING (NEW)               */
+/* OVERLAYS & MODALS                          */
 /* ========================================== */
 .overlay-background {
-    -fx-background-color: rgba(15, 23, 42, 0.7); /* Dark slate background with 70% opacity */
+    -fx-background-color: rgba(15, 23, 42, 0.7);
 }
 
 .close-button {
@@ -285,9 +324,12 @@
 }
 
 .close-button:hover {
-    -fx-text-fill: #ef4444; /* Turns red when hovered */
+    -fx-text-fill: #ef4444;
 }
-/* --- SEASON DROPDOWN STYLING --- */
+
+/* ========================================== */
+/* SEASON DROPDOWN COMPONENTS                 */
+/* ========================================== */
 .season-dropdown {
     -fx-background-color: #FFFFFF;
     -fx-border-color: #E2E8F0;
@@ -333,4 +375,101 @@
     -fx-text-fill: #6C5CE7;
     -fx-font-weight: bold;
     -fx-background-radius: 6px;
+}
+
+/* ========================================== */
+/* CONSOLIDATED DARK THEME OVERRIDES          */
+/* ========================================== */
+.dark-theme {
+    -fx-background-color: #0f172a;
+}
+
+.dark-theme .label {
+    -fx-text-fill: #f8fafc;
+}
+
+.dark-theme .about-subtitle {
+    -fx-text-fill: #818cf8;
+}
+
+/* --- Dark Theme: Layout & Containers --- */
+.dark-theme .content-card,
+.dark-theme .sidebar {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+}
+
+/* --- Dark Theme: Search Bar --- */
+.dark-theme .center-search-wrapper {
+    -fx-background-color: #0f172a;
+    -fx-border-color: #4f46e5;
+}
+
+.dark-theme .center-search-input {
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #64748b;
+}
+
+/* --- Dark Theme: Tables --- */
+.dark-theme .table-view {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+    -fx-background-insets: 0;
+}
+
+.dark-theme .table-view .placeholder {
+    -fx-background-color: transparent;
+}
+
+.dark-theme .table-view .placeholder .label {
+    -fx-text-fill: #94a3b8;
+    -fx-background-color: transparent;
+}
+
+.dark-theme .table-view .column-header-background {
+    -fx-background-color: #0f172a;
+}
+
+.dark-theme .table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #334155 transparent;
+    -fx-size: 45;
+}
+
+.dark-theme .table-view .column-header .label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.dark-theme .table-cell {
+    -fx-border-color: transparent #334155 transparent transparent;
+    -fx-padding: 0 10 0 10;
+}
+
+.dark-theme .table-row-cell {
+    -fx-background-color: #1e293b;
+    -fx-border-color: transparent transparent #334155 transparent;
+    -fx-text-fill: #f8fafc;
+}
+
+.dark-theme .table-row-cell:odd {
+    -fx-background-color: #1e293b;
+}
+
+.dark-theme .table-row-cell:even {
+    -fx-background-color: #16213e;
+}
+
+.dark-theme .table-row-cell:hover {
+    -fx-background-color: #334155;
+}
+
+.dark-theme .table-row-cell:filled:selected {
+    -fx-background-color: #334155;
+    -fx-background-insets: 0;
+}
+
+.dark-theme .table-view .table-cell:selected .label {
+    -fx-text-fill: white;
 }

@@ -1,82 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.ProgressBar?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
 
-<BorderPane prefHeight="760.0" prefWidth="1150.0" styleClass="main-container" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.merstats.vex.ui.MainController">
+<BorderPane fx:id="rootPane" prefHeight="760.0" prefWidth="1150.0" styleClass="main-container" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.merstats.vex.ui.MainController">
     <left>
         <VBox fx:id="sidebar" prefWidth="260.0" spacing="12.0" styleClass="sidebar">
-            <padding>
-                <Insets bottom="30.0" left="30.0" right="20.0" top="40.0" />
-            </padding>
-
-            <HBox alignment="CENTER_LEFT" spacing="2.0">
-                <VBox.margin><Insets bottom="30.0" /></VBox.margin>
-                <Label text="Tech" styleClass="logo-text-primary" />
-                <Label text="Portal" styleClass="logo-text-accent" />
-            </HBox>
-
+            <padding><Insets bottom="30.0" left="30.0" right="20.0" top="40.0" /></padding>
+            <HBox alignment="CENTER_LEFT" spacing="2.0"><VBox.margin><Insets bottom="30.0" /></VBox.margin><Label text="Tech" styleClass="logo-text-primary" /><Label text="Portal" styleClass="logo-text-accent" /></HBox>
             <Label text="MAIN MENU" styleClass="nav-section-header" />
             <Label fx:id="btnDashboard" text="❖  Team Dashboard" styleClass="nav-link-active" />
             <Label fx:id="btnSkills" text="🎯  Skills Analytics" styleClass="nav-link" />
             <Label fx:id="btnH2H" text="VS  Head-to-Head" styleClass="nav-link" />
             <Region prefHeight="15.0" />
-
             <Label text="COMPETITION" styleClass="nav-section-header" />
             <Label fx:id="btnAwards" text="🏆  Awards Archive" styleClass="nav-link" />
             <Label fx:id="btnEvents" text="📊  Event Statistics" styleClass="nav-link" />
             <Label fx:id="btnLeaderboards" text="🌍  Global TrueRank" styleClass="nav-link" />
             <Region prefHeight="15.0" />
-
             <Label text="SYSTEM" styleClass="nav-section-header" />
             <Label fx:id="btnAbout" text="👤  About Me" styleClass="nav-link" />
             <Label fx:id="btnSettings" text="⚙  Settings" styleClass="nav-link" />
-
             <Region VBox.vgrow="ALWAYS" />
             <Label text="MerStats Engine" styleClass="merstats-label" />
         </VBox>
     </left>
-
     <center>
         <StackPane styleClass="center-background">
             <padding><Insets bottom="50.0" left="60.0" right="60.0" top="50.0" /></padding>
 
             <VBox fx:id="contentCard" alignment="CENTER" spacing="25.0" styleClass="content-card">
                 <padding><Insets bottom="60.0" left="60.0" right="60.0" top="60.0" /></padding>
-
-                <ImageView fx:id="mainLogo" fitHeight="120.0" fitWidth="120.0" preserveRatio="true">
-                    <image><Image url="@logo.png" /></image>
-                    <VBox.margin><Insets bottom="10.0"/></VBox.margin>
-                </ImageView>
-
-                <VBox alignment="CENTER" spacing="5.0">
-                    <Label fx:id="dashboardTitle" text="Ready to Query" styleClass="hero-header" />
-                    <Label fx:id="dashboardSubtitle" text="Enter a unique Team ID to retrieve real-time telemetry." styleClass="hero-subtitle" wrapText="true" />
-                </VBox>
-
-                <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" maxWidth="550.0">
-                    <VBox.margin><Insets top="20.0" bottom="10.0"/></VBox.margin>
-                    <TextField fx:id="teamInput" HBox.hgrow="ALWAYS" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" />
-                    <Button fx:id="searchButton" minWidth="110.0" mnemonicParsing="false" styleClass="center-search-button" text="Search" />
-                </HBox>
-
-                <ProgressBar fx:id="loadingBar" prefWidth="550.0" progress="-1.0" visible="false" styleClass="loading-bar">
-                    <VBox.margin><Insets top="5.0" bottom="-10.0"/></VBox.margin>
-                </ProgressBar>
-
+                <ImageView fx:id="mainLogo" fitHeight="120.0" fitWidth="120.0" preserveRatio="true"><image><Image url="@logo.png" /></image><VBox.margin><Insets bottom="10.0"/></VBox.margin></ImageView>
+                <VBox alignment="CENTER" spacing="5.0"><Label fx:id="dashboardTitle" text="Ready to Query" styleClass="hero-header" /><Label fx:id="dashboardSubtitle" text="Enter a unique Team ID to retrieve real-time telemetry." styleClass="hero-subtitle" wrapText="true" /></VBox>
+                <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" maxWidth="550.0"><VBox.margin><Insets top="20.0" bottom="10.0"/></VBox.margin><TextField fx:id="teamInput" HBox.hgrow="ALWAYS" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" /><Button fx:id="searchButton" minWidth="110.0" styleClass="center-search-button" text="Search" /></HBox>
+                <ProgressBar fx:id="loadingBar" prefWidth="550.0" progress="-1.0" visible="false" styleClass="loading-bar"><VBox.margin><Insets top="5.0" bottom="-10.0"/></VBox.margin></ProgressBar>
                 <TableView fx:id="skillsTable" prefHeight="300.0" prefWidth="800.0">
                     <columns>
                         <TableColumn fx:id="seasonCol" prefWidth="150.0" text="Season" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10;" />
@@ -86,99 +45,133 @@
                         <TableColumn fx:id="scoreCol" prefWidth="100.0" text="Score" style="-fx-alignment: CENTER; -fx-font-weight: bold;" />
                         <TableColumn fx:id="dashRankCol" prefWidth="100.0" text="Global Rank" style="-fx-alignment: CENTER;" />
                     </columns>
-                    <VBox.margin><Insets top="20.0" /></VBox.margin>
                 </TableView>
             </VBox>
 
             <VBox fx:id="leaderboardCard" visible="false" managed="false" alignment="TOP_CENTER" spacing="20.0" styleClass="content-card">
                 <padding><Insets bottom="40.0" left="40.0" right="40.0" top="40.0" /></padding>
-
-                <VBox alignment="CENTER" spacing="5.0">
-                    <Label fx:id="leaderboardTitle" text="MerStats Global TrueRank" styleClass="hero-header" />
-                    <Label text="Global Active Teams. Data updates nightly via cloud computation." styleClass="hero-subtitle" wrapText="true" />
-                </VBox>
-
-                <HBox alignment="CENTER" spacing="12.0">
-                    <ComboBox fx:id="seasonDropdown" prefWidth="240.0" styleClass="season-dropdown" />
-                    <Button fx:id="btnLoadLeaderboard" text="Refresh Leaderboard" styleClass="center-search-button" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" prefWidth="200.0">
-                        <TextField fx:id="lbSearchInput" HBox.hgrow="ALWAYS" promptText="Filter by Team..." styleClass="center-search-input" />
-                    </HBox>
-                    <Button fx:id="btnHowItWorks" text="ⓘ How it Works" styleClass="social-button" />
-                </HBox>
-
-                <ProgressBar fx:id="lbLoadingBar" prefWidth="850.0" progress="-1.0" visible="false" styleClass="loading-bar">
-                    <VBox.margin><Insets top="-10.0" bottom="-10.0"/></VBox.margin>
-                </ProgressBar>
-
-                <TableView fx:id="leaderboardTable" VBox.vgrow="ALWAYS" prefWidth="850.0">
+                <VBox alignment="CENTER" spacing="5.0"><Label fx:id="leaderboardTitle" text="MerStats Global TrueRank" styleClass="hero-header" /><Label text="Global Active Teams. Data updates nightly via cloud computation." styleClass="hero-subtitle" wrapText="true" /></VBox>
+                <HBox alignment="CENTER" spacing="12.0"><ComboBox fx:id="seasonDropdown" prefWidth="240.0" styleClass="season-dropdown" /><Button fx:id="btnLoadLeaderboard" text="Refresh" styleClass="center-search-button" /><Region HBox.hgrow="ALWAYS" /><HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" prefWidth="200.0"><TextField fx:id="lbSearchInput" HBox.hgrow="ALWAYS" promptText="Filter by Team..." styleClass="center-search-input" /></HBox><Button fx:id="btnHowItWorks" text="ⓘ How it Works" styleClass="social-button" /></HBox>
+                <ProgressBar fx:id="lbLoadingBar" prefWidth="850.0" progress="-1.0" visible="false" styleClass="loading-bar"><VBox.margin><Insets top="-10.0" bottom="-10.0"/></VBox.margin></ProgressBar>
+                <TableView fx:id="leaderboardTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="lbRankCol" prefWidth="60.0" text="Rank" style="-fx-alignment: CENTER;" />
-                        <TableColumn fx:id="lbTeamCol" prefWidth="100.0" text="Team" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10; -fx-font-weight: bold;" />
-                        <TableColumn fx:id="lbRecordCol" prefWidth="100.0" text="W-L-T" style="-fx-alignment: CENTER;" />
-                        <TableColumn fx:id="lbTrueRankCol" prefWidth="210.0" text="TrueRank Tier" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 15; -fx-font-weight: bold; -fx-font-size: 14px;" />
+                        <TableColumn fx:id="lbTeamCol" prefWidth="250.0" text="Team" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 15;" />
+                        <TableColumn fx:id="lbRecordCol" prefWidth="120.0" text="W-L-T" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="lbOprCol" prefWidth="100.0" text="Global OPR" style="-fx-alignment: CENTER; -fx-text-fill: #818cf8; -fx-font-weight: bold;" />
+                        <TableColumn fx:id="lbTrueRankCol" prefWidth="280.0" text="TrueRank Tier" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 20;" />
                     </columns>
                 </TableView>
             </VBox>
 
             <VBox fx:id="eventCard" visible="false" managed="false" alignment="TOP_CENTER" spacing="20.0" styleClass="content-card">
                 <padding><Insets bottom="40.0" left="40.0" right="40.0" top="40.0" /></padding>
-
-                <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="Event Statistics &amp; TrueRank" styleClass="hero-header" />
-                    <Label text="Enter an Event SKU to calculate localized, on-demand tournament metrics." styleClass="hero-subtitle" wrapText="true" />
-                </VBox>
-
-                <HBox alignment="CENTER" spacing="12.0">
-                    <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" prefWidth="400.0">
-                        <TextField fx:id="eventInput" HBox.hgrow="ALWAYS" promptText="e.g., https://www.robotevents.com/.../RE-V5RC-24-1234.html" styleClass="center-search-input" />
-                    </HBox>
-                    <Button fx:id="eventSearchButton" text="Analyze Event" styleClass="center-search-button" />
-                </HBox>
-
-                <ProgressBar fx:id="eventLoadingBar" prefWidth="850.0" progress="-1.0" visible="false" styleClass="loading-bar">
-                    <VBox.margin><Insets top="-10.0" bottom="-10.0"/></VBox.margin>
-                </ProgressBar>
-
+                <VBox alignment="CENTER" spacing="5.0"><Label text="Event Statistics &amp; TrueRank" styleClass="hero-header" /><Label text="Enter an Event SKU to calculate localized, on-demand tournament metrics." styleClass="hero-subtitle" wrapText="true" /></VBox>
+                <HBox alignment="CENTER" spacing="12.0"><HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" prefWidth="400.0"><TextField fx:id="eventInput" HBox.hgrow="ALWAYS" promptText="e.g., RE-V5RC..." styleClass="center-search-input" /></HBox><Button fx:id="eventSearchButton" text="Analyze Event" styleClass="center-search-button" /></HBox>
+                <ProgressBar fx:id="eventLoadingBar" prefWidth="850.0" progress="-1.0" visible="false" styleClass="loading-bar"><VBox.margin><Insets top="-10.0" bottom="-10.0"/></VBox.margin></ProgressBar>
                 <TableView fx:id="eventTable" VBox.vgrow="ALWAYS" prefWidth="850.0">
                     <columns>
                         <TableColumn fx:id="evRankCol" prefWidth="60.0" text="Rank" style="-fx-alignment: CENTER;" />
                         <TableColumn fx:id="evTeamCol" prefWidth="150.0" text="Team" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10; -fx-font-weight: bold;" />
                         <TableColumn fx:id="evRecordCol" prefWidth="100.0" text="W-L-T" style="-fx-alignment: CENTER;" />
+                        <TableColumn fx:id="evOprCol" prefWidth="80.0" text="Event OPR" style="-fx-alignment: CENTER; -fx-text-fill: #6C5CE7; -fx-font-weight: bold;" />
                         <TableColumn fx:id="evTrueRankCol" prefWidth="210.0" text="Event TrueRank" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 15; -fx-font-weight: bold; -fx-font-size: 14px;" />
                     </columns>
                 </TableView>
             </VBox>
+            <VBox fx:id="aboutCard" visible="false" managed="false" alignment="CENTER" spacing="25.0" styleClass="content-card">
+                <padding><Insets bottom="60.0" left="80.0" right="80.0" top="60.0" /></padding>
 
-            <VBox fx:id="aboutCard" visible="false" managed="false" alignment="CENTER" spacing="20.0" styleClass="content-card">
-                <padding><Insets bottom="60.0" left="60.0" right="60.0" top="60.0" /></padding>
-                <Label text="👨‍💻" style="-fx-font-size: 72px;" />
-                <Label text="Mer" styleClass="about-name" />
-                <Label text="Software Developer &amp; Robotics Analyst" styleClass="about-role" />
-                <Label text="As a passionate developer and robotics enthusiast, I engineered this platform to bridge the gap between raw competition data and actionable insights." styleClass="about-bio" wrapText="true" maxWidth="550.0" textAlignment="CENTER" />
+                <Label text="👨‍💻" style="-fx-font-size: 80px;" />
+
+                <VBox alignment="CENTER" spacing="8.0">
+                    <Label text="Mer" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+                    <Label text="Software Developer &amp; Robotics Analyst" style="-fx-font-size: 18px; -fx-text-fill: #4f46e5; -fx-font-weight: bold;" />
+                </VBox>
+
+                <Label text="As a passionate developer and robotics enthusiast, I engineered this platform to bridge the gap between raw competition data and actionable insights. MerStats is designed to deliver a seamless, high-performance analytics experience for the competitive VEX Robotics community."
+                       wrapText="true" textAlignment="CENTER" style="-fx-font-size: 16px; -fx-text-fill: #64748b; -fx-line-spacing: 6px;" maxWidth="700.0" />
+
                 <HBox alignment="CENTER" spacing="15.0">
-                    <VBox.margin><Insets top="20.0" /></VBox.margin>
-                    <Button fx:id="btnGithub" text="GitHub (@Meeerrr)" styleClass="social-button" />
+                    <VBox.margin><Insets top="15.0" /></VBox.margin>
+                    <Button fx:id="btnGithub" text="View on GitHub" styleClass="center-search-button" style="-fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" />
                 </HBox>
             </VBox>
+            <VBox fx:id="settingsCard" visible="false" managed="false" alignment="TOP_CENTER" spacing="30.0" styleClass="content-card">
+                <padding><Insets bottom="60.0" left="80.0" right="80.0" top="60.0" /></padding>
 
-            <VBox fx:id="placeholderCard" visible="false" managed="false" alignment="CENTER" spacing="15.0" styleClass="content-card">
-                <padding><Insets bottom="60.0" left="60.0" right="60.0" top="60.0" /></padding>
-                <Label text="🚧" style="-fx-font-size: 80px;" />
-                <Label fx:id="placeholderTitle" text="Under Construction" styleClass="hero-header" />
-                <Label text="This analytics module is currently being developed. Check back soon for updates." styleClass="hero-subtitle" wrapText="true" />
+                <VBox alignment="CENTER" spacing="5.0">
+                    <Label text="⚙️ System Settings" styleClass="hero-header" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+                    <Label text="Customize your MerStats workspace." style="-fx-text-fill: #64748b; -fx-font-size: 16px;" />
+                </VBox>
+
+                <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: #f8fafc; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10;">
+                    <VBox>
+                        <Label text="App Theme" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+                        <Label text="Toggle between Light Mode and Dark Mode." style="-fx-text-fill: #64748b;" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnThemeToggle" text="🌙 Switch to Dark Mode" styleClass="center-search-button" style="-fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" />
+                </HBox>
             </VBox>
-
+            <VBox fx:id="placeholderCard" visible="false" managed="false" alignment="CENTER" spacing="15.0" styleClass="content-card">
+                <padding><Insets bottom="60.0" left="60.0" right="60.0" top="60.0" /></padding><Label text="🚧" style="-fx-font-size: 80px;" /><Label fx:id="placeholderTitle" text="Under Construction" styleClass="hero-header" />
+            </VBox>
             <VBox fx:id="eloOverlay" visible="false" managed="false" alignment="CENTER" styleClass="overlay-background">
-                <VBox maxWidth="650.0" spacing="20.0" styleClass="content-card">
-                    <padding><Insets bottom="40.0" left="40.0" right="40.0" top="40.0" /></padding>
+                <VBox maxWidth="750.0" maxHeight="650.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 15, 0, 0, 5);">
+                    <padding><Insets bottom="40.0" left="40.0" right="20.0" top="40.0" /></padding>
+
                     <HBox alignment="CENTER_LEFT">
-                        <Label text="MerStats TrueRank Engine" styleClass="hero-header" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                        <Button fx:id="btnCloseOverlay" text="✕" styleClass="close-button" />
+                        <Label text="📊 The MerStats Engine: How it Works" styleClass="hero-header" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnCloseOverlay" text="✕" styleClass="close-button" style="-fx-background-color: transparent; -fx-text-fill: #94a3b8; -fx-font-size: 18px; -fx-cursor: hand;">
+                            <HBox.margin><Insets right="20.0" /></HBox.margin>
+                        </Button>
                     </HBox>
-                    <Label text="How the 2v2 Elo Algorithm Works" styleClass="about-role" />
-                    <Label text="Unlike standard Win/Loss/Tie records, TrueRank measures a team's actual field dominance by analyzing expectations versus reality.&#10;&#10;1. Alliance Averaging:&#10;The engine calculates the average Elo rating for both the Red and Blue alliances to determine statistical win probability.&#10;&#10;2. Normalized Margin of Victory:&#10;A 1-point win is very different from a 50-point blowout. The engine calculates the percentage difference in score to reward total dominance.&#10;&#10;3. K-Factor Decay:&#10;Teams are tracked individually. A robot playing its 2nd match has high volatility (K=64). By their 9th match, their rating stabilizes (K=16), filtering out early-season flukes.&#10;&#10;4. Elimination Stakes &amp; Auto Filter:&#10;Elimination Bracket matches are multiplied by 1.5x to reward clutch performance. Autonomous winners receive an additional 1.15x multiplier to isolate coding superiority.&#10;&#10;5. Multi-Pass Iteration:&#10;The algorithm simulates the entire tournament three times in a row. It learns who the true apex predators are in Pass 1, and retroactively applies that knowledge to Pass 2 and 3 for absolute mathematical precision.&#10;&#10;6. Cloud ETL Architecture:&#10;MerStats is powered by a nightly automated Python worker. Every night, a cloud server downloads thousands of global VEX matches, crunches the heavy 3-Pass algorithm, and pushes the final scores to a Supabase PostgreSQL database. This client simply queries the finished global leaderboard in milliseconds." styleClass="about-bio" wrapText="true" />
+
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="doc-scroll-pane">
+                        <padding><Insets right="20.0" /></padding>
+                        <VBox spacing="18.0">
+                            <Label text="🧠 The MerStats Engine is a composite power index that evaluates a robot's true capability by fusing two distinct mathematical models: TrueRank (Win Dominance) and OPR (Pure Scoring Power). Because standard W-L-T records are easily skewed by lucky alliance pairings, MerStats relies entirely on advanced probability and linear algebra to reveal the true field hierarchy." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+
+                            <Region prefHeight="5.0" />
+
+                            <VBox spacing="8.0">
+                                <Label text="1. 🏆 The 3-Pass TrueRank Algorithm (Elo)" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+                                <Label text="TrueRank measures how effectively a team wins matches, regardless of the score. Every team starts the season at a baseline 1500 rating." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="🔹 Win Probability: Before every match, the engine calculates an expected outcome by comparing the average Elo of the Red Alliance versus the Blue Alliance." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="🔥 The Upset Mechanic: TrueRank is a direct exchange. If a low-rated underdog upsets a highly-rated powerhouse, the underdogs steal a massive amount of Elo from the favorites. If the favorites win as expected, they only gain a tiny fraction of points." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="📈 Margin of Victory (MOV): This multiplier rewards dominance. Winning by 50 points steals significantly more Elo than winning a close match by 1 point." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="🔄 The 3-Pass Simulation: To stabilize early-season volatility and remove chronological timeline bias, the engine simulates the entire global tournament schedule three times in a row, allowing the data to perfectly settle." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                            </VBox>
+
+                            <Region prefHeight="5.0" />
+
+                            <VBox spacing="8.0">
+                                <Label text="2. ⚡ Offensive Power Rating (OPR)" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+                                <Label text="While TrueRank tracks winning, OPR isolates pure scoring capability." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="💻 The Matrix Solver: MerStats maps every single match of the season into a massive system of linear equations." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="🎯 Individual Contribution: Using Least Squares approximation, the engine solves the matrix to determine exactly how many points a specific robot mathematically contributes to their alliance on average, completely isolating them from the performance of their partners." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                            </VBox>
+
+                            <Region prefHeight="5.0" />
+
+                            <VBox spacing="8.0">
+                                <Label text="3. 🔬 Z-Score Blending (The Final Index)" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+                                <Label text="Because TrueRank (measured in thousands) and OPR (measured in tens) use completely different scales, they cannot be simply added together." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="📊 Normalization: The engine calculates the global average for both metrics and assigns every team a 'Z-Score' (measuring exactly how many standard deviations they are above or below the global average)." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="✨ The Golden Ratio: The standard MerStats Index weighs TrueRank at 70% and OPR at 30%. This rewards teams that consistently win matches and play heavy defense, while still giving a massive boost to the game's highest-scoring." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                                <Label text="🏁 The Final Score: This blended metric is mathematically re-mapped back onto the intuitive 1500-based scale to create the final, definitive Global Leaderboard." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                            </VBox>
+
+                            <Region prefHeight="5.0" />
+
+                            <VBox spacing="8.0">
+                                <Label text="💎 Dynamic Tiers" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #b45309;" />
+                                <Label text="⭐ Your final TrueRank determines your prestige tier. The highest tier, The Dome, is not a static number. It dynamically calculates the size of the active database and rigorously restricts entry to only the Top 0.5% of robots in the world." wrapText="true" style="-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;" />
+                            </VBox>
+                        </VBox>
+                    </ScrollPane>
                 </VBox>
             </VBox>
         </StackPane>
