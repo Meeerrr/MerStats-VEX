@@ -146,9 +146,8 @@ public class RobotEventsService {
             HttpRequest matchReq = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/matches?per_page=250")).header("Authorization", RE_API_KEY).GET().build();
             JsonNode matchData = mapper.readTree(client.send(matchReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
 
-            // 🔥 UPGRADE 1: The 3-Pass Simulation Loop to stabilize chronological bias
-            for (int pass = 0; pass < 3; pass++) {
-                // Reset Elo to 1500 before starting passes 2 and 3
+            // 2-Pass Local Simulation
+            for (int pass = 0; pass < 2; pass++) {
                 if (pass > 0) {
                     for (SeasonRanking t : teamMap.values()) t.setEloScore(1500.0);
                 }
@@ -165,17 +164,15 @@ public class RobotEventsService {
 
                     double actR = rs > bs ? 1.0 : (rs == bs ? 0.5 : 0.0);
 
-                    // Slightly nerfed MOV so blowouts don't break the engine
-                    double mov = Math.log(1.0 + (double) Math.abs(rs - bs)) + 1.0;
+                    // 🔥 SURGICAL NERF 1: Hyper-compressed MOV. Maxes out around 1.3x for insane blowouts.
+                    double mov = 1.0 + (Math.log10(1.0 + Math.abs(rs - bs)) * 0.15);
 
                     processAllianceElo(redAll, blueAll, teamMap, actR, 1.0 - actR, mov);
                 }
             }
 
-            // Calculate OPR
             calculateEventOPR(matchData, teamMap);
 
-            // 🔥 UPGRADE 2: Z-Score Blending (70% Elo, 30% OPR)
             double sumElo = 0, sumOpr = 0;
             for (SeasonRanking t : teamMap.values()) {
                 sumElo += t.getEloScore();
@@ -192,14 +189,18 @@ public class RobotEventsService {
             double stdElo = Math.max(Math.sqrt(varElo / teamMap.size()), 1.0);
             double stdOpr = Math.max(Math.sqrt(varOpr / teamMap.size()), 1.0);
 
+            // 🔥 SURGICAL NERF 2: Dynamic OPR Weighting based on Event Size
+            // 10 teams = ~78% OPR | 40 teams = ~57% OPR | 80+ teams = 30% OPR floor
+            double oprWeight = Math.max(0.30, 0.85 - (teamMap.size() * 0.007));
+            double eloWeight = 1.0 - oprWeight;
+
             for (SeasonRanking t : teamMap.values()) {
                 double zElo = (t.getEloScore() - meanElo) / stdElo;
                 double zOpr = (t.getOpr() - meanOpr) / stdOpr;
 
-                // The Golden Ratio
-                double blendedZ = (zElo * 0.70) + (zOpr * 0.30);
+                // Blend using the dynamic ratio
+                double blendedZ = (zElo * eloWeight) + (zOpr * oprWeight);
 
-                // Re-map to the intuitive 1500 scale
                 double finalTrueRank = meanElo + (blendedZ * stdElo);
                 t.setEloScore(finalTrueRank);
             }
@@ -227,11 +228,11 @@ public class RobotEventsService {
         double redAvg = redT.stream().mapToDouble(SeasonRanking::getEloScore).average().orElse(1500.0);
         double blueAvg = blueT.stream().mapToDouble(SeasonRanking::getEloScore).average().orElse(1500.0);
 
-        // Expected outcome probability formula
         double expR = 1.0 / (1.0 + Math.pow(10.0, (blueAvg - redAvg) / 400.0));
 
-        double rs = 32.0 * (actR - expR) * mov;
-        double bs = 32.0 * (actB - (1.0 - expR)) * mov;
+        // 🔥 TWEAK 4: Halved the K-Factor (16.0 instead of 32.0)
+        double rs = 16.0 * (actR - expR) * mov;
+        double bs = 16.0 * (actB - (1.0 - expR)) * mov;
 
         for (SeasonRanking t : redT) t.setEloScore(t.getEloScore() + rs);
         for (SeasonRanking t : blueT) t.setEloScore(t.getEloScore() + bs);
