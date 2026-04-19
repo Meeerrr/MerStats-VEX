@@ -23,7 +23,7 @@ supabase_headers = {
     "Prefer": "resolution=merge-duplicates" # Crucial: Allows safe re-runs
 }
 
-TARGET_SEASONS = [197, 190, 204]
+TARGET_SEASONS = [197, 240, 190, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def fetch_all_pages(base_url):
     """Handles pagination and aggressive rate limiting from RobotEvents"""
