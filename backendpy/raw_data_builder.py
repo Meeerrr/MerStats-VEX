@@ -2,6 +2,7 @@ import requests
 import os
 import time
 from dotenv import load_dotenv
+from fast_worker import run_fast_compute
 
 load_dotenv()
 
@@ -23,7 +24,7 @@ supabase_headers = {
     "Prefer": "resolution=merge-duplicates" # Crucial: Allows safe re-runs
 }
 
-TARGET_SEASONS = [197, 190, 204]
+TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def fetch_all_pages(base_url):
     """Handles pagination and aggressive rate limiting from RobotEvents"""
@@ -150,4 +151,11 @@ def build_cache():
             upload_to_supabase(matches_payload)
 
 if __name__ == "__main__":
+    # 1. Run the scraper
     build_cache()
+
+    # 2. Automatically trigger the math engine
+    print("\n✅ CACHE COMPLETE. Automatically launching the Lightning Engine...")
+    time.sleep(2) # Give the database a brief second to settle
+
+    run_fast_compute()

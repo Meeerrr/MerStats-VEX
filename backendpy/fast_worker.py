@@ -19,7 +19,7 @@ supabase_headers = {
     "Prefer": "resolution=merge-duplicates" # Safely overwrites existing ranks
 }
 
-TARGET_SEASONS = [197, 190, 204]
+TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def inflate_match(micro_match):
     """
