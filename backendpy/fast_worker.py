@@ -19,7 +19,7 @@ supabase_headers = {
     "Prefer": "resolution=merge-duplicates" # Safely overwrites existing ranks
 }
 
-TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+TARGET_SEASONS = [190, 197, 240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def inflate_match(micro_match):
     """
@@ -107,16 +107,17 @@ def run_fast_compute():
         # ==========================================
         print("🛡️ Verifying Team Roster in Database (Fixing Foreign Keys)...")
 
-        # Targets 'team_name' as the column holding the team identifier
-        team_payload = [{"team_name": t} for t in unique_teams]
+        # We assign the team number (e.g., '1430X') to the 'id' column,
+        # which is the standard Supabase Primary Key.
+        team_payload = [{"id": t, "team_name": "Unknown"} for t in unique_teams]
 
         team_headers = {**supabase_headers, "Prefer": "resolution=ignore-duplicates"}
 
         for i in range(0, len(team_payload), 1000):
             batch = team_payload[i:i+1000]
 
-            # Explicitly checks 'team_name' for conflicts
-            res = requests.post(f"{SUPABASE_URL}/rest/v1/teams?on_conflict=team_name", json=batch, headers=team_headers)
+            # We tell Supabase to check the 'id' column for conflicts
+            res = requests.post(f"{SUPABASE_URL}/rest/v1/teams?on_conflict=id", json=batch, headers=team_headers)
 
             if res.status_code not in [200, 201]:
                 print(f"   ❌ CRITICAL ROSTER ERROR: {res.text}")
