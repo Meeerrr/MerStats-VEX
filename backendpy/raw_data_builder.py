@@ -1,6 +1,7 @@
 import requests
 import os
 import time
+from datetime import datetime
 from dotenv import load_dotenv
 from fast_worker import run_fast_compute
 
@@ -21,9 +22,11 @@ supabase_headers = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json",
-    "Prefer": "resolution=merge-duplicates" # Crucial: Allows safe re-runs
+    "Prefer": "resolution=merge-duplicates"
 }
 
+# The master list of seasons you care about.
+# You can add new ones here, and the Smart Router will handle the rest!
 TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
 
 def fetch_all_pages(base_url):
@@ -38,7 +41,6 @@ def fetch_all_pages(base_url):
         try:
             res = requests.get(paginated_url, headers=re_headers, timeout=15)
 
-            # Handle Rate Limits cleanly
             if res.status_code == 429:
                 print("\n⚠️ Rate limited! Sleeping 5s...")
                 time.sleep(5)
@@ -67,22 +69,68 @@ def fetch_all_pages(base_url):
     return results
 
 def upload_to_supabase(payload, batch_size=1000):
-    """Pushes data to Supabase in massive chunks"""
     endpoint = f"{SUPABASE_URL}/rest/v1/raw_matches"
-
     for i in range(0, len(payload), batch_size):
         batch = payload[i:i + batch_size]
         res = requests.post(endpoint, json=batch, headers=supabase_headers)
-
         if res.status_code in [200, 201]:
             print(f"   ☁️ Upserted batch of {len(batch)} matches to Cloud.")
         else:
             print(f"   ❌ Batch failed: {res.text}")
 
-def build_cache():
-    print(f"🚀 Starting Database Cache Builder for {len(TARGET_SEASONS)} seasons...")
+# ==========================================
+# 🔥 THE SMART ROUTER LOGIC
+# ==========================================
+def get_seasons_to_process():
+    print("🧠 Initializing Smart Router...")
+    print("📡 Fetching official season status from RobotEvents...")
+
+    # 1. Get the official start/end dates for every season
+    all_re_seasons = fetch_all_pages("https://www.robotevents.com/api/v2/seasons")
+    season_meta_map = {s['id']: s for s in all_re_seasons}
+
+    seasons_to_run = []
 
     for season_id in TARGET_SEASONS:
+        meta = season_meta_map.get(season_id)
+        if not meta:
+            continue
+
+        # 2. Check if the season is ACTIVE by looking at the official end date
+        is_active = False
+        end_date_str = meta.get('end')
+
+        if end_date_str:
+            # Parse '2024-05-30T00:00:00Z' into a date object we can compare to today
+            end_date = datetime.strptime(end_date_str[:10], "%Y-%m-%d")
+            if datetime.now() <= end_date:
+                is_active = True
+
+        if is_active:
+            print(f"   🟢 Season {season_id} is ACTIVE. Added to queue.")
+            seasons_to_run.append(season_id)
+        else:
+            # 3. If archived, check if we already downloaded it by asking Supabase for just 1 row
+            db_check = requests.get(f"{SUPABASE_URL}/rest/v1/raw_matches?season_id=eq.{season_id}&select=id&limit=1", headers=supabase_headers)
+
+            if len(db_check.json()) == 0:
+                print(f"   🟡 Season {season_id} is ARCHIVED but missing data. Added to queue (One-Time Download).")
+                seasons_to_run.append(season_id)
+            else:
+                print(f"   ⚪ Season {season_id} is ARCHIVED and completed. Skipped.")
+
+    return seasons_to_run
+
+# ==========================================
+
+def build_cache(active_seasons):
+    if not active_seasons:
+        print("✅ No new seasons require data fetching!")
+        return
+
+    print(f"\n🚀 Starting Database Cache Builder for {len(active_seasons)} seasons...")
+
+    for season_id in active_seasons:
         print(f"\n==================================================")
         print(f"📅 CACHING SEASON ID: {season_id}")
         print(f"==================================================")
@@ -103,27 +151,23 @@ def build_cache():
             for div in event.get('divisions', []):
                 div_matches = fetch_all_pages(f"https://www.robotevents.com/api/v2/events/{event['id']}/divisions/{div['id']}/matches?per_page=250")
 
-                # Format and Micro-Compress for Supabase DB
                 for m in div_matches:
                     alliances = m.get("alliances", [])
                     if len(alliances) < 2:
-                        continue # Skip invalid matches
+                        continue
 
-                    # Sort alliances safely (RobotEvents sometimes scrambles the array order)
                     red_all = alliances[0] if alliances[0].get("color") == "red" else alliances[1]
                     blue_all = alliances[0] if alliances[0].get("color") == "blue" else alliances[1]
 
                     red_score = red_all.get("score", 0)
                     blue_score = blue_all.get("score", 0)
 
-                    # Skip unplayed matches
                     if red_score == 0 and blue_score == 0:
                         continue
 
                     red_teams = [t.get("team", {}).get("name") for t in red_all.get("teams", [])]
                     blue_teams = [t.get("team", {}).get("name") for t in blue_all.get("teams", [])]
 
-                    # 🔬 THE MICRO-JSON PAYLOAD
                     micro_match = {
                         "rs": red_score,
                         "rt": red_teams,
@@ -137,25 +181,28 @@ def build_cache():
                         "match_data": micro_match
                     })
 
-            time.sleep(1) # Be nice to the API between events
+            time.sleep(1)
 
-            # If our payload gets huge, upload it to clear memory
             if len(matches_payload) >= 5000:
                 print("\n   📦 Payload full. Uploading chunk...")
                 upload_to_supabase(matches_payload)
-                matches_payload = [] # Clear the list
+                matches_payload = []
 
-        # Upload any remaining matches at the end of the season
         if matches_payload:
             print(f"\n   📦 Finalizing Season {season_id} uploads...")
             upload_to_supabase(matches_payload)
 
 if __name__ == "__main__":
-    # 1. Run the scraper
-    build_cache()
+    # 1. Run the Smart Router
+    seasons_to_process = get_seasons_to_process()
 
-    # 2. Automatically trigger the math engine
-    print("\n✅ CACHE COMPLETE. Automatically launching the Lightning Engine...")
-    time.sleep(2) # Give the database a brief second to settle
+    # 2. Only scrape the seasons that actually need it
+    build_cache(seasons_to_process)
 
-    run_fast_compute()
+    # 3. Only crunch math for the seasons that were scraped
+    if seasons_to_process:
+        print("\n✅ CACHE COMPLETE. Automatically launching the Lightning Engine...")
+        time.sleep(2)
+        run_fast_compute(seasons_to_process)
+    else:
+        print("\n✅ Smart Router determined no updates were needed today. Pipeline resting.")
