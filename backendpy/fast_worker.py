@@ -2,7 +2,7 @@ import requests
 import os
 import time
 from dotenv import load_dotenv
-from engine import calculate_truerank # Your existing math engine
+from engine import calculate_truerank
 
 load_dotenv()
 
@@ -98,9 +98,23 @@ def run_fast_compute():
             # Inflate the match
             inflated_matches.append(inflate_match(m))
 
-        # Format the team roster to match what engine.py expects (usually a list of dicts)
+        # Format the team roster to match what engine.py expects
         all_teams = [{"name": t} for t in unique_teams]
         print(f"🤖 Found {len(all_teams)} unique active teams.")
+
+        # ==========================================
+        # 🔥 THE ROSTER CHECK (Fixes Foreign Key Errors)
+        # ==========================================
+        print("🛡️ Verifying Team Roster in Database (Fixing Foreign Keys)...")
+        team_payload = [{"team_id": t, "team_name": "Unknown"} for t in unique_teams]
+
+        # Use 'ignore-duplicates' so we don't overwrite the names of teams you already have!
+        team_headers = {**supabase_headers, "Prefer": "resolution=ignore-duplicates"}
+
+        for i in range(0, len(team_payload), 1000):
+            batch = team_payload[i:i+1000]
+            requests.post(f"{SUPABASE_URL}/rest/v1/teams", json=batch, headers=team_headers)
+        # ==========================================
 
         # 3. Run the math engine
         print("🧠 Crunching TrueRank and OPR matrices...")
