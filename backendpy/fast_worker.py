@@ -16,16 +16,10 @@ supabase_headers = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json",
-    "Prefer": "resolution=merge-duplicates" # Safely overwrites existing ranks
+    "Prefer": "resolution=merge-duplicates"
 }
 
-TARGET_SEASONS = [190, 197, 240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
-
 def inflate_match(micro_match):
-    """
-    Inflates our ultra-light Micro-JSON back into standard RobotEvents JSON
-    so your existing engine.py math doesn't break.
-    """
     return {
         "alliances": [
             {
@@ -42,15 +36,13 @@ def inflate_match(micro_match):
     }
 
 def fetch_db_matches(season_id):
-    """Pulls thousands of raw matches from Supabase in ~2 seconds"""
     matches = []
     offset = 0
-    limit = 1000 # Supabase max rows per request
+    limit = 1000
 
     print(f"📡 Pulling Season {season_id} matches from Data Lake...", end=" ")
 
     while True:
-        # Use Range headers to paginate through the database instantly
         headers = {**supabase_headers, "Range": f"{offset}-{offset+limit-1}"}
         res = requests.get(f"{SUPABASE_URL}/rest/v1/raw_matches?season_id=eq.{season_id}&select=match_data", headers=headers)
 
@@ -62,94 +54,71 @@ def fetch_db_matches(season_id):
         if not data:
             break
 
-        # Extract the micro-match payload from the database row
         matches.extend([row["match_data"] for row in data])
-
         offset += limit
         if len(data) < limit:
-            break # We reached the end of the data
+            break
 
     print(f"✅ Downloaded {len(matches)} matches.")
     return matches
 
-def run_fast_compute():
+# 🔥 UPDATE: The function now takes a list of seasons to process!
+def run_fast_compute(seasons_to_process):
     print("🚀 Starting Lightning Compute Engine...")
     start_time = time.time()
 
-    for season_id in TARGET_SEASONS:
+    for season_id in seasons_to_process:
         print(f"\n==================================================")
         print(f"⚡ RECALCULATING SEASON: {season_id}")
         print(f"==================================================")
 
-        # 1. Fetch from your own DB instead of RobotEvents
         micro_matches = fetch_db_matches(season_id)
         if not micro_matches:
             print("⚠️ No matches found for this season. Skipping.")
             continue
 
-        # 2. Extract unique teams and Inflate matches for the Engine
         unique_teams = set()
         inflated_matches = []
 
         for m in micro_matches:
-            # Add teams to our master roster
             unique_teams.update(m.get("rt", []))
             unique_teams.update(m.get("bt", []))
-            # Inflate the match
             inflated_matches.append(inflate_match(m))
 
-        # Format the team roster to match what engine.py expects
         all_teams = [{"name": t} for t in unique_teams]
         print(f"🤖 Found {len(all_teams)} unique active teams.")
 
-        # ==========================================
-        # 🔥 THE ROSTER CHECK (Fixes Foreign Key Errors)
-        # ==========================================
         print("🛡️ Verifying Team Roster in Database (Fixing Foreign Keys)...")
-
-        # We assign the team number (e.g., '1430X') to the 'id' column,
-        # which is the standard Supabase Primary Key.
         team_payload = [{"id": t, "team_name": "Unknown"} for t in unique_teams]
-
         team_headers = {**supabase_headers, "Prefer": "resolution=ignore-duplicates"}
 
         for i in range(0, len(team_payload), 1000):
             batch = team_payload[i:i+1000]
-
-            # We tell Supabase to check the 'id' column for conflicts
             res = requests.post(f"{SUPABASE_URL}/rest/v1/teams?on_conflict=id", json=batch, headers=team_headers)
-
             if res.status_code not in [200, 201]:
                 print(f"   ❌ CRITICAL ROSTER ERROR: {res.text}")
-        # ==========================================
 
-        # 3. Run the math engine
         print("🧠 Crunching TrueRank and OPR matrices...")
         engine_start = time.time()
-
-        # Calls your engine.py function
         final_elo_data = calculate_truerank(all_teams, inflated_matches)
-
         print(f"⏱️ Math finished in {round(time.time() - engine_start, 2)} seconds.")
 
-        # 4. Inject the season ID and push updated ranks back to Supabase
         for data in final_elo_data:
             data["season_id"] = season_id
 
         print("☁️ Pushing updated leaderboards to Supabase...")
-
-        # Upload in batches of 1000
         for i in range(0, len(final_elo_data), 1000):
             batch = final_elo_data[i:i+1000]
             res = requests.post(f"{SUPABASE_URL}/rest/v1/global_truerank", json=batch, headers=supabase_headers)
-
             if res.status_code in [200, 201]:
                 print(f"   ✅ Upserted batch {i} to {i + len(batch)}")
             else:
                 print(f"   ❌ Upload Error: {res.text}")
 
     total_time = round(time.time() - start_time, 2)
-    print(f"\n🏁 ALL SEASONS COMPLETED in {total_time} seconds!")
+    print(f"\n🏁 ENGINE COMPLETED in {total_time} seconds!")
 
 if __name__ == "__main__":
-    run_fast_compute()
+    # If you run fast_worker.py manually, it defaults to calculating everything.
+    TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+    run_fast_compute(TARGET_SEASONS)
