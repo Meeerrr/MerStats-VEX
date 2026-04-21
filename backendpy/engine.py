@@ -65,12 +65,18 @@ def calculate_truerank(teams, matches):
             for t in blue_teams: team_data[t]["ties"] += 1
 
         # ---------------------------------------------------------
-        # 📉 1. STRICT MOV CAP
+        # 📉 1. THE "SMART" MOV MULTIPLIER (Rewards OPR, Nerfs Farming)
         # ---------------------------------------------------------
         point_diff = abs(red_score - blue_score)
-        mov_multiplier = 1.0 + (math.log10(point_diff + 1) * 0.15)
-        # 1.05x cap kills OPR farming instantly
-        mov_multiplier = min(mov_multiplier, 1.05)
+
+        # We use a softer logarithmic curve (0.10 instead of 0.15).
+        # Every extra point scored matters, but the value diminishes as the blowout gets bigger.
+        mov_multiplier = 1.0 + (math.log10(point_diff + 1) * 0.10)
+
+        # We raise the cap from 1.05x to 1.20x.
+        # High OPR teams like 229V can now earn up to a 20% Elo bonus for a masterclass blowout,
+        # restoring the mathematical value of having a massive offense!
+        mov_multiplier = min(mov_multiplier, 1.20)
 
         # ---------------------------------------------------------
         # 🔥 2. ASYMMETRIC EVENT MULTIPLIER (The Worlds Shield)
