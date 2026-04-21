@@ -125,5 +125,5 @@ def run_fast_compute(seasons_to_process):
 
 if __name__ == "__main__":
     # If you run fast_worker.py manually, it defaults to calculating everything.
-    TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+    TARGET_SEASONS = [190,197, 240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
     run_fast_compute(TARGET_SEASONS)

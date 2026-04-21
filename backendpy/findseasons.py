@@ -15,6 +15,6 @@ print("🔍 Searching RobotEvents for Push Back Season IDs...\n")
 for season in res.get('data', []):
     name = season.get('name', '')
     # Filter for the current active season
-    if "Gateway" in name or "2012-2013" in name:
+    if "Over Under" in name or "2023-2024" in name:
         program = season.get('program', {}).get('code', 'Unknown')
         print(f"🏆 Program: {program} | Season: {name} | ---> ID: {season['id']}")
