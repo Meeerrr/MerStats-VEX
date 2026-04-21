@@ -1,102 +1,145 @@
-import numpy as np
-from scipy.sparse import lil_matrix
-from scipy.sparse.linalg import lsqr
+import math
 
-def calculate_truerank(all_teams, all_matches):
-    """Calculates both the 3-Pass Elo and the Sparse Matrix Global OPR."""
+def calculate_truerank(teams, matches):
+    """
+    The Core Math Engine (Single-Pass Chronological).
+    Now features a 10% Rolling OPR Synergy Bonus.
+    """
+    print("      -> Initializing TrueRank Math Engine...")
 
-    # 1. Map all unique teams to a specific index for our Matrix
-    team_list = list(set([t.get("name") for t in all_teams if t.get("name")]))
-    team_to_idx = {team: idx for idx, team in enumerate(team_list)}
-    num_teams = len(team_list)
+    # 1. Initialize the global roster with new Rolling OPR tracking stats
+    team_data = {}
+    for t in teams:
+        team_name = t["name"]
+        team_data[team_name] = {
+            "elo": 1500.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 0,
+            "total_points": 0,       # Tracks raw points scored chronologically
+            "offensive_matches": 0   # Tracks matches played for the OPR average
+        }
 
-    # 2. Filter valid matches
-    valid_matches = []
-    for m in all_matches:
-        if not m.get("alliances") or len(m["alliances"]) < 2: continue
-        red = m["alliances"][0] if m["alliances"][0]["color"] == "red" else m["alliances"][1]
-        blue = m["alliances"][0] if m["alliances"][0]["color"] == "blue" else m["alliances"][1]
-        if red["score"] == 0 and blue["score"] == 0: continue
-        valid_matches.append((red, blue))
+    base_k = 32.0
 
-    # ==========================================
-    # --- PART 1: OFFENSIVE POWER RATING (OPR) ---
-    # ==========================================
-    num_equations = len(valid_matches) * 2 # Red score is one equation, Blue score is another
-    A = lil_matrix((num_equations, num_teams))
-    B = np.zeros(num_equations)
+    for match in matches:
+        red_alliance = match["alliances"][0] if match["alliances"][0]["color"] == "red" else match["alliances"][1]
+        blue_alliance = match["alliances"][0] if match["alliances"][0]["color"] == "blue" else match["alliances"][1]
 
-    row = 0
-    for red, blue in valid_matches:
-        for t in red["teams"]:
-            t_name = t["team"]["name"]
-            if t_name in team_to_idx: A[row, team_to_idx[t_name]] = 1
-        B[row] = red["score"]
-        row += 1
+        red_score = red_alliance["score"]
+        blue_score = blue_alliance["score"]
 
-        for t in blue["teams"]:
-            t_name = t["team"]["name"]
-            if t_name in team_to_idx: A[row, team_to_idx[t_name]] = 1
-        B[row] = blue["score"]
-        row += 1
+        red_teams = [t["team"]["name"] for t in red_alliance["teams"]]
+        blue_teams = [t["team"]["name"] for t in blue_alliance["teams"]]
 
-    # Solve the sparse system Ax = B using Least Squares
-    opr_vector = lsqr(A, B)[0]
+        if not red_teams or not blue_teams:
+            continue
 
-    # ==========================================
-    # --- PART 2: 3-PASS ELO TRUERANK ---
-    # ==========================================
-    elo_scores = {team: 1500.0 for team in team_list}
-    records = {team: {"wins": 0, "losses": 0, "ties": 0} for team in team_list}
-    k_factor = 32
+        # Calculate Alliance Averages
+        red_avg_elo = sum([team_data[t]["elo"] for t in red_teams]) / len(red_teams)
+        blue_avg_elo = sum([team_data[t]["elo"] for t in blue_teams]) / len(blue_teams)
 
-    for pass_num in range(3):
-        for red, blue in valid_matches:
-            red_teams = [t["team"]["name"] for t in red["teams"] if t["team"]["name"] in elo_scores]
-            blue_teams = [t["team"]["name"] for t in blue["teams"] if t["team"]["name"] in elo_scores]
-            if not red_teams or not blue_teams: continue
+        # ---------------------------------------------------------
+        # 📊 NEW: CALCULATE ROLLING OPR
+        # Calculate the historical average points scored by these teams before this match happens
+        # ---------------------------------------------------------
+        red_total_pts = sum([team_data[t]["total_points"] for t in red_teams])
+        red_total_matches = sum([team_data[t]["offensive_matches"] for t in red_teams])
+        red_rolling_opr = (red_total_pts / red_total_matches) if red_total_matches > 0 else 0
 
-            red_avg = sum([elo_scores[t] for t in red_teams]) / len(red_teams)
-            blue_avg = sum([elo_scores[t] for t in blue_teams]) / len(blue_teams)
+        blue_total_pts = sum([team_data[t]["total_points"] for t in blue_teams])
+        blue_total_matches = sum([team_data[t]["offensive_matches"] for t in blue_teams])
+        blue_rolling_opr = (blue_total_pts / blue_total_matches) if blue_total_matches > 0 else 0
 
-            expected_red = 1 / (1 + 10 ** ((blue_avg - red_avg) / 400))
-            expected_blue = 1 - expected_red
+        # Calculate Expected Win Probability
+        red_expected = 1.0 / (1.0 + math.pow(10, (blue_avg_elo - red_avg_elo) / 400.0))
+        blue_expected = 1.0 / (1.0 + math.pow(10, (red_avg_elo - blue_avg_elo) / 400.0))
 
-            rs, bs = red["score"], blue["score"]
-            actual_red = 1 if rs > bs else (0.5 if rs == bs else 0)
-            actual_blue = 1 - actual_red
-            mov = 1 + abs(rs - bs) / max(rs + bs, 1) # Margin of Victory Multiplier
+        # Determine actual outcome & Log W-L-T
+        if red_score > blue_score:
+            red_actual = 1.0
+            blue_actual = 0.0
+            for t in red_teams: team_data[t]["wins"] += 1
+            for t in blue_teams: team_data[t]["losses"] += 1
+        elif blue_score > red_score:
+            red_actual = 0.0
+            blue_actual = 1.0
+            for t in red_teams: team_data[t]["losses"] += 1
+            for t in blue_teams: team_data[t]["wins"] += 1
+        else:
+            red_actual = 0.5
+            blue_actual = 0.5
+            for t in red_teams: team_data[t]["ties"] += 1
+            for t in blue_teams: team_data[t]["ties"] += 1
 
-            shift_red = k_factor * (actual_red - expected_red) * mov
-            shift_blue = k_factor * (actual_blue - expected_blue) * mov
+        # 1. THE "SMART" MOV MULTIPLIER (Capped at 1.20x)
+        point_diff = abs(red_score - blue_score)
+        mov_multiplier = 1.0 + (math.log10(point_diff + 1) * 0.10)
+        mov_multiplier = min(mov_multiplier, 1.20)
 
-            for t in red_teams: elo_scores[t] += shift_red
-            for t in blue_teams: elo_scores[t] += shift_blue
+        # ---------------------------------------------------------
+        # 💥 2. THE NEW 10% OPR SYNERGY BONUS
+        # If a team wins, AND they have a higher historical offensive output,
+        # they get a micro-boost for executing their strategy.
+        # ---------------------------------------------------------
+        opr_multiplier = 1.0
+        if red_actual == 1.0 and red_rolling_opr > blue_rolling_opr:
+            opr_advantage = red_rolling_opr - blue_rolling_opr
+            # 0.005 scaling means a 20-point OPR advantage hits the 10% max cap
+            opr_multiplier = 1.0 + min((opr_advantage * 0.005), 0.10)
+        elif blue_actual == 1.0 and blue_rolling_opr > red_rolling_opr:
+            opr_advantage = blue_rolling_opr - red_rolling_opr
+            opr_multiplier = 1.0 + min((opr_advantage * 0.005), 0.10)
 
-            # Only log wins/losses on the first pass
-            if pass_num == 0:
-                for t in red_teams:
-                    if actual_red == 1: records[t]["wins"] += 1
-                    elif actual_red == 0.5: records[t]["ties"] += 1
-                    else: records[t]["losses"] += 1
-                for t in blue_teams:
-                    if actual_blue == 1: records[t]["wins"] += 1
-                    elif actual_blue == 0.5: records[t]["ties"] += 1
-                    else: records[t]["losses"] += 1
+        # 3. ASYMMETRIC EVENT MULTIPLIER (The Worlds Shield)
+        event_level = match.get("level", "Local")
+        if "World" in event_level or "Championship" in event_level:
+            reward_mult = 2.0
+            penalty_mult = 0.5
+        elif "Signature" in event_level or "National" in event_level:
+            reward_mult = 1.5
+            penalty_mult = 0.75
+        elif "State" in event_level or "Region" in event_level:
+            reward_mult = 1.2
+            penalty_mult = 0.9
+        else:
+            reward_mult = 1.0
+            penalty_mult = 1.0
 
-    # ==========================================
-    # --- PART 3: PACKAGE DATA FOR CLOUD ---
-    # ==========================================
-    final_data = []
-    for team in team_list:
-        idx = team_to_idx[team]
-        final_data.append({
-            "team_id": team,
-            "elo_score": round(elo_scores[team], 2),
-            "opr": round(opr_vector[idx], 2),
-            "wins": records[team]["wins"],
-            "losses": records[team]["losses"],
-            "ties": records[team]["ties"]
-        })
+            # ---------------------------------------------------------
+        # COMBINE ALL THE MATH
+        # Notice we multiply the OPR synergy in here!
+        # ---------------------------------------------------------
+        base_red_shift = base_k * mov_multiplier * opr_multiplier * (red_actual - red_expected)
+        base_blue_shift = base_k * mov_multiplier * opr_multiplier * (blue_actual - blue_expected)
 
-    return final_data
+        red_shift = base_red_shift * (reward_mult if base_red_shift > 0 else penalty_mult)
+        blue_shift = base_blue_shift * (reward_mult if base_blue_shift > 0 else penalty_mult)
+
+        for t in red_teams:
+            team_data[t]["elo"] += red_shift
+            # Update points for the next match's Rolling OPR calculation!
+            team_data[t]["total_points"] += red_score
+            team_data[t]["offensive_matches"] += 1
+
+        for t in blue_teams:
+            team_data[t]["elo"] += blue_shift
+            team_data[t]["total_points"] += blue_score
+            team_data[t]["offensive_matches"] += 1
+
+    # Package the final data for Supabase
+    print("      -> Math complete. Packaging leaderboards...")
+    final_leaderboard = []
+
+    for team_name, stats in team_data.items():
+        total_matches = stats["wins"] + stats["losses"] + stats["ties"]
+        if total_matches > 0:
+            final_leaderboard.append({
+                "team_id": team_name,
+                "elo_score": round(stats["elo"], 2),
+                "wins": stats["wins"],
+                "losses": stats["losses"],
+                "ties": stats["ties"]
+            })
+
+    return final_leaderboard
