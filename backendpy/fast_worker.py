@@ -20,7 +20,9 @@ supabase_headers = {
 }
 
 def inflate_match(micro_match):
+    """Inflates the Micro-JSON and passes the Event Tier to the math engine"""
     return {
+        "level": micro_match.get("lvl", "Local"), # Passes the tier string
         "alliances": [
             {
                 "color": "red",

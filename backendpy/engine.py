@@ -1,102 +1,128 @@
-import numpy as np
-from scipy.sparse import lil_matrix
-from scipy.sparse.linalg import lsqr
+import math
 
-def calculate_truerank(all_teams, all_matches):
-    """Calculates both the 3-Pass Elo and the Sparse Matrix Global OPR."""
+def calculate_truerank(teams, matches):
+    """
+    The Core Math Engine.
+    Takes in a list of unique teams and a list of matches, runs a 3-pass
+    Elo simulation, and returns the final global leaderboards.
+    """
+    print("      -> Initializing TrueRank Math Engine...")
 
-    # 1. Map all unique teams to a specific index for our Matrix
-    team_list = list(set([t.get("name") for t in all_teams if t.get("name")]))
-    team_to_idx = {team: idx for idx, team in enumerate(team_list)}
-    num_teams = len(team_list)
+    # 1. Initialize the global roster (Everyone starts at 1500)
+    team_data = {}
+    for t in teams:
+        team_name = t["name"]
+        team_data[team_name] = {
+            "elo": 1500.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 0
+        }
 
-    # 2. Filter valid matches
-    valid_matches = []
-    for m in all_matches:
-        if not m.get("alliances") or len(m["alliances"]) < 2: continue
-        red = m["alliances"][0] if m["alliances"][0]["color"] == "red" else m["alliances"][1]
-        blue = m["alliances"][0] if m["alliances"][0]["color"] == "blue" else m["alliances"][1]
-        if red["score"] == 0 and blue["score"] == 0: continue
-        valid_matches.append((red, blue))
+    # 2. The 3-Pass System (Simulated Annealing)
+    # Pass 1: Aggressive sorting (K=32)
+    # Pass 2: Stabilization (K=24)
+    # Pass 3: Micro-adjustments and Record Keeping (K=16)
+    k_factors = [32.0, 24.0, 16.0]
 
-    # ==========================================
-    # --- PART 1: OFFENSIVE POWER RATING (OPR) ---
-    # ==========================================
-    num_equations = len(valid_matches) * 2 # Red score is one equation, Blue score is another
-    A = lil_matrix((num_equations, num_teams))
-    B = np.zeros(num_equations)
+    for pass_num, base_k in enumerate(k_factors):
+        is_final_pass = (pass_num == 2) # We only track Wins/Losses on the last pass
 
-    row = 0
-    for red, blue in valid_matches:
-        for t in red["teams"]:
-            t_name = t["team"]["name"]
-            if t_name in team_to_idx: A[row, team_to_idx[t_name]] = 1
-        B[row] = red["score"]
-        row += 1
+        for match in matches:
+            # Safely extract alliances
+            red_alliance = match["alliances"][0] if match["alliances"][0]["color"] == "red" else match["alliances"][1]
+            blue_alliance = match["alliances"][0] if match["alliances"][0]["color"] == "blue" else match["alliances"][1]
 
-        for t in blue["teams"]:
-            t_name = t["team"]["name"]
-            if t_name in team_to_idx: A[row, team_to_idx[t_name]] = 1
-        B[row] = blue["score"]
-        row += 1
+            red_score = red_alliance["score"]
+            blue_score = blue_alliance["score"]
 
-    # Solve the sparse system Ax = B using Least Squares
-    opr_vector = lsqr(A, B)[0]
+            # Extract team names
+            red_teams = [t["team"]["name"] for t in red_alliance["teams"]]
+            blue_teams = [t["team"]["name"] for t in blue_alliance["teams"]]
 
-    # ==========================================
-    # --- PART 2: 3-PASS ELO TRUERANK ---
-    # ==========================================
-    elo_scores = {team: 1500.0 for team in team_list}
-    records = {team: {"wins": 0, "losses": 0, "ties": 0} for team in team_list}
-    k_factor = 32
+            # Skip matches with invalid team data
+            if not red_teams or not blue_teams:
+                continue
 
-    for pass_num in range(3):
-        for red, blue in valid_matches:
-            red_teams = [t["team"]["name"] for t in red["teams"] if t["team"]["name"] in elo_scores]
-            blue_teams = [t["team"]["name"] for t in blue["teams"] if t["team"]["name"] in elo_scores]
-            if not red_teams or not blue_teams: continue
+            # Calculate Alliance Averages
+            red_avg_elo = sum([team_data[t]["elo"] for t in red_teams]) / len(red_teams)
+            blue_avg_elo = sum([team_data[t]["elo"] for t in blue_teams]) / len(blue_teams)
 
-            red_avg = sum([elo_scores[t] for t in red_teams]) / len(red_teams)
-            blue_avg = sum([elo_scores[t] for t in blue_teams]) / len(blue_teams)
+            # Calculate Expected Win Probability (Standard Elo Math)
+            red_expected = 1.0 / (1.0 + math.pow(10, (blue_avg_elo - red_avg_elo) / 400.0))
+            blue_expected = 1.0 / (1.0 + math.pow(10, (red_avg_elo - blue_avg_elo) / 400.0))
 
-            expected_red = 1 / (1 + 10 ** ((blue_avg - red_avg) / 400))
-            expected_blue = 1 - expected_red
+            # Determine actual outcome & Log W-L-T on final pass
+            if red_score > blue_score:
+                red_actual = 1.0
+                blue_actual = 0.0
+                if is_final_pass:
+                    for t in red_teams: team_data[t]["wins"] += 1
+                    for t in blue_teams: team_data[t]["losses"] += 1
+            elif blue_score > red_score:
+                red_actual = 0.0
+                blue_actual = 1.0
+                if is_final_pass:
+                    for t in red_teams: team_data[t]["losses"] += 1
+                    for t in blue_teams: team_data[t]["wins"] += 1
+            else:
+                red_actual = 0.5
+                blue_actual = 0.5
+                if is_final_pass:
+                    for t in red_teams: team_data[t]["ties"] += 1
+                    for t in blue_teams: team_data[t]["ties"] += 1
 
-            rs, bs = red["score"], blue["score"]
-            actual_red = 1 if rs > bs else (0.5 if rs == bs else 0)
-            actual_blue = 1 - actual_red
-            mov = 1 + abs(rs - bs) / max(rs + bs, 1) # Margin of Victory Multiplier
+            # ---------------------------------------------------------
+            # 📉 1. LOGARITHMIC MOV MULTIPLIER (Nerfing Blowouts)
+            # ---------------------------------------------------------
+            point_diff = abs(red_score - blue_score)
+            # We add +1 so a 0 point diff (tie) equals log10(1) = 0 multiplier increase
+            # We use a base modifier of + 1.0 so the minimum multiplier is 1x.
+            mov_multiplier = 1.0 + (math.log10(point_diff + 1) * 0.15)
+            # Cap the maximum blowout reward at 1.3x to stop OPR farming
+            mov_multiplier = min(mov_multiplier, 1.3)
 
-            shift_red = k_factor * (actual_red - expected_red) * mov
-            shift_blue = k_factor * (actual_blue - expected_blue) * mov
+            # ---------------------------------------------------------
+            # 🔥 2. THE EVENT TIER MULTIPLIER (Strength of Schedule)
+            # ---------------------------------------------------------
+            event_level = match.get("level", "Local")
 
-            for t in red_teams: elo_scores[t] += shift_red
-            for t in blue_teams: elo_scores[t] += shift_blue
+            if "World" in event_level:
+                tier_multiplier = 2.0  # Worlds is a bloodbath. High risk, high reward.
+            elif "Signature" in event_level or "National" in event_level:
+                tier_multiplier = 1.5  # Heavy respect for Nationals & Signatures
+            elif "State" in event_level or "Region" in event_level:
+                tier_multiplier = 1.2  # State Championships
+            else:
+                tier_multiplier = 1.0  # Local weekend events
 
-            # Only log wins/losses on the first pass
-            if pass_num == 0:
-                for t in red_teams:
-                    if actual_red == 1: records[t]["wins"] += 1
-                    elif actual_red == 0.5: records[t]["ties"] += 1
-                    else: records[t]["losses"] += 1
-                for t in blue_teams:
-                    if actual_blue == 1: records[t]["wins"] += 1
-                    elif actual_blue == 0.5: records[t]["ties"] += 1
-                    else: records[t]["losses"] += 1
+            # Combine the multipliers with the current pass's K-Factor
+            final_k_factor = base_k * mov_multiplier * tier_multiplier
 
-    # ==========================================
-    # --- PART 3: PACKAGE DATA FOR CLOUD ---
-    # ==========================================
-    final_data = []
-    for team in team_list:
-        idx = team_to_idx[team]
-        final_data.append({
-            "team_id": team,
-            "elo_score": round(elo_scores[team], 2),
-            "opr": round(opr_vector[idx], 2),
-            "wins": records[team]["wins"],
-            "losses": records[team]["losses"],
-            "ties": records[team]["ties"]
-        })
+            # Calculate Elo Shift (How many points are stolen)
+            red_shift = final_k_factor * (red_actual - red_expected)
+            blue_shift = final_k_factor * (blue_actual - blue_expected)
 
-    return final_data
+            # Apply shifts to the teams
+            for t in red_teams:
+                team_data[t]["elo"] += red_shift
+            for t in blue_teams:
+                team_data[t]["elo"] += blue_shift
+
+    # 3. Package the final data for Supabase
+    print("      -> Math complete. Packaging leaderboards...")
+    final_leaderboard = []
+
+    for team_name, stats in team_data.items():
+        # Only upload teams that actually played matches (prevents blank 0-0-0 profiles)
+        total_matches = stats["wins"] + stats["losses"] + stats["ties"]
+        if total_matches > 0:
+            final_leaderboard.append({
+                "team_id": team_name,
+                "truerank_score": round(stats["elo"], 2),
+                "wins": stats["wins"],
+                "losses": stats["losses"],
+                "ties": stats["ties"]
+            })
+
+    return final_leaderboard

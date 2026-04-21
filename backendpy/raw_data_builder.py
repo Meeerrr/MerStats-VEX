@@ -27,7 +27,7 @@ supabase_headers = {
 
 # The master list of seasons you care about.
 # You can add new ones here, and the Smart Router will handle the rest!
-TARGET_SEASONS = [240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92, 85, 73]
+TARGET_SEASONS = [197,190,240, 181, 173, 154, 139, 130, 125, 119, 115, 110, 102, 92,]
 
 def fetch_all_pages(base_url):
     """Handles pagination and aggressive rate limiting from RobotEvents"""
@@ -147,6 +147,8 @@ def build_cache(active_seasons):
 
         for idx, event in enumerate(all_events):
             print(f"[{idx+1}/{len(all_events)}] Extracting Matches: {event.get('sku')}", end=" ")
+            # 1. Grab the official level from RobotEvents (e.g., "World", "Signature", "National")
+            event_level = event.get('level', 'Local')
 
             for div in event.get('divisions', []):
                 div_matches = fetch_all_pages(f"https://www.robotevents.com/api/v2/events/{event['id']}/divisions/{div['id']}/matches?per_page=250")
@@ -178,7 +180,8 @@ def build_cache(active_seasons):
                     matches_payload.append({
                         "id": m["id"],
                         "season_id": season_id,
-                        "match_data": micro_match
+                        "match_data": micro_match,
+                        "lvl": event_level
                     })
 
             time.sleep(1)
