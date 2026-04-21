@@ -170,18 +170,19 @@ def build_cache(active_seasons):
                     red_teams = [t.get("team", {}).get("name") for t in red_all.get("teams", [])]
                     blue_teams = [t.get("team", {}).get("name") for t in blue_all.get("teams", [])]
 
+                    #  micro JSON
                     micro_match = {
                         "rs": red_score,
                         "rt": red_teams,
                         "bs": blue_score,
-                        "bt": blue_teams
+                        "bt": blue_teams,
+                        "lvl": event_level
                     }
 
                     matches_payload.append({
                         "id": m["id"],
                         "season_id": season_id,
                         "match_data": micro_match,
-                        "lvl": event_level
                     })
 
             time.sleep(1)

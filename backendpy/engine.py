@@ -80,7 +80,7 @@ def calculate_truerank(teams, matches):
             # We use a base modifier of + 1.0 so the minimum multiplier is 1x.
             mov_multiplier = 1.0 + (math.log10(point_diff + 1) * 0.15)
             # Cap the maximum blowout reward at 1.3x to stop OPR farming
-            mov_multiplier = min(mov_multiplier, 1.3)
+            mov_multiplier = min(mov_multiplier, 1.05)
 
             # ---------------------------------------------------------
             # 🔥 2. THE EVENT TIER MULTIPLIER (Strength of Schedule)
@@ -119,7 +119,7 @@ def calculate_truerank(teams, matches):
         if total_matches > 0:
             final_leaderboard.append({
                 "team_id": team_name,
-                "truerank_score": round(stats["elo"], 2),
+                "elo_score": round(stats["elo"], 2),
                 "wins": stats["wins"],
                 "losses": stats["losses"],
                 "ties": stats["ties"]
