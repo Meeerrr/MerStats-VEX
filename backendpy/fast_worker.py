@@ -45,8 +45,11 @@ def fetch_db_matches(season_id):
     print(f"📡 Pulling Season {season_id} matches from Data Lake...", end=" ")
 
     while True:
+        # Use Range headers to paginate through the database
         headers = {**supabase_headers, "Range": f"{offset}-{offset+limit-1}"}
-        res = requests.get(f"{SUPABASE_URL}/rest/v1/raw_matches?season_id=eq.{season_id}&select=match_data", headers=headers)
+
+        # Added &order=id.asc to force chronological sorting!
+        res = requests.get(f"{SUPABASE_URL}/rest/v1/raw_matches?season_id=eq.{season_id}&select=match_data&order=id.asc", headers=headers)
 
         if res.status_code != 200:
             print(f"❌ Error: {res.text}")
