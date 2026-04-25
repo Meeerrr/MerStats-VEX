@@ -118,8 +118,8 @@ def get_seasons_to_process():
                 seasons_to_run.append(season_id)
             else:
                 print(f"   ⚪ Season {season_id} is ARCHIVED and completed. Skipped.")
-
-    return seasons_to_run
+    return [197]
+    #return seasons_to_run
 
 # ==========================================
 
