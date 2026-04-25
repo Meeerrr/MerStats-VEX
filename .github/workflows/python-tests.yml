@@ -3,7 +3,7 @@ name: TrueRank Math Engine Tests
 # This tells GitHub to run the script every time you push to the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
   pull_request:
     branches: [ "main" ]
 
