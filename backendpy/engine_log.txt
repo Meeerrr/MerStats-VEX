@@ -5014,3 +5014,229 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f9e0' in posit
 [411/1793] Extracting Matches: RE-V5RC-25-1618 ■
 [412/1793] Extracting Matches: RE-V5RC-25-2278 ■
 [413/1793] Extracting Matches: RE-V5RC-25-3186 ■
+[414/1793] Extracting Matches: RE-V5RC-25-1416 
+⚠️ Rate limited! Sleeping 5s...
+■
+[415/1793] Extracting Matches: RE-V5RC-25-2832 ■
+[416/1793] Extracting Matches: RE-V5RC-25-3418 ■
+[417/1793] Extracting Matches: RE-V5RC-25-9915 ■
+[418/1793] Extracting Matches: RE-V5RC-25-9960 ■
+[419/1793] Extracting Matches: RE-V5RC-25-0048 
+⚠️ Rate limited! Sleeping 5s...
+■
+[420/1793] Extracting Matches: RE-V5RC-25-0153 ■
+■
+
+⚠️ Rate limited! Sleeping 5s...
+■
+[421/1793] Extracting Matches: RE-V5RC-25-1641 ■
+[422/1793] Extracting Matches: RE-V5RC-25-1845 ■
+[423/1793] Extracting Matches: RE-V5RC-25-2443 ■
+[424/1793] Extracting Matches: RE-V5RC-25-2652 
+⚠️ Rate limited! Sleeping 5s...
+■
+[425/1793] Extracting Matches: RE-V5RC-25-2893 ■
+[426/1793] Extracting Matches: RE-V5RC-25-3771 ■
+[427/1793] Extracting Matches: RE-V5RC-25-3772 ■
+[428/1793] Extracting Matches: RE-V5RC-25-9919 
+⚠️ Rate limited! Sleeping 5s...
+■
+[429/1793] Extracting Matches: RE-V5RC-25-9958 ■
+[430/1793] Extracting Matches: RE-V5RC-25-9959 ■
+[431/1793] Extracting Matches: RE-V5RC-25-9961 ■
+[432/1793] Extracting Matches: RE-V5RC-25-9995 ■
+[433/1793] Extracting Matches: RE-V5RC-25-9998 
+⚠️ Rate limited! Sleeping 5s...
+■
+[434/1793] Extracting Matches: RE-V5RC-25-0005 ■
+[435/1793] Extracting Matches: RE-V5RC-25-0034 ■
+■
+
+⚠️ Rate limited! Sleeping 5s...
+■
+[436/1793] Extracting Matches: RE-V5RC-25-0045 ■
+[437/1793] Extracting Matches: RE-V5RC-25-0046 ■
+[438/1793] Extracting Matches: RE-V5RC-25-0134 ■
+[439/1793] Extracting Matches: RE-V5RC-25-0135 
+⚠️ Rate limited! Sleeping 5s...
+■
+[440/1793] Extracting Matches: RE-V5RC-25-0158 ■
+[441/1793] Extracting Matches: RE-V5RC-25-0161 ■
+[442/1793] Extracting Matches: RE-V5RC-25-0211 
+⚠️ Rate limited! Sleeping 5s...
+■
+[443/1793] Extracting Matches: RE-V5RC-25-0270 ■
+[444/1793] Extracting Matches: RE-V5RC-25-0285 ■
+[445/1793] Extracting Matches: RE-V5RC-25-0363 ■
+[446/1793] Extracting Matches: RE-V5RC-25-0380 ■
+[447/1793] Extracting Matches: RE-V5RC-25-0494 
+⚠️ Rate limited! Sleeping 5s...
+■
+[448/1793] Extracting Matches: RE-V5RC-25-0580 ■
+[449/1793] Extracting Matches: RE-V5RC-25-0587 ■
+[450/1793] Extracting Matches: RE-V5RC-25-0588 ■
+
+   📦 Payload full. Uploading chunk...
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 14 matches to Cloud.
+[451/1793] Extracting Matches: RE-V5RC-25-0612 ■
+[452/1793] Extracting Matches: RE-V5RC-25-0649 ■
+[453/1793] Extracting Matches: RE-V5RC-25-0744 ■
+[454/1793] Extracting Matches: RE-V5RC-25-0876 ■
+[455/1793] Extracting Matches: RE-V5RC-25-0966 
+⚠️ Rate limited! Sleeping 5s...
+■
+[456/1793] Extracting Matches: RE-V5RC-25-0997 ■
+[457/1793] Extracting Matches: RE-V5RC-25-1026 ■
+[458/1793] Extracting Matches: RE-V5RC-25-1040 ■
+[459/1793] Extracting Matches: RE-V5RC-25-1076 
+⚠️ Rate limited! Sleeping 5s...
+■
+[460/1793] Extracting Matches: RE-V5RC-25-1212 ■
+[461/1793] Extracting Matches: RE-V5RC-25-1267 ■
+[462/1793] Extracting Matches: RE-V5RC-25-1270 ■
+[463/1793] Extracting Matches: RE-V5RC-25-1318 ■
+[464/1793] Extracting Matches: RE-V5RC-25-1335 
+⚠️ Rate limited! Sleeping 5s...
+■
+[465/1793] Extracting Matches: RE-V5RC-25-1345 ■
+[466/1793] Extracting Matches: RE-V5RC-25-1350 ■
+[467/1793] Extracting Matches: RE-V5RC-25-1406 ■
+[468/1793] Extracting Matches: RE-V5RC-25-1465 ■
+[469/1793] Extracting Matches: RE-V5RC-25-1473 
+⚠️ Rate limited! Sleeping 5s...
+■
+[470/1793] Extracting Matches: RE-V5RC-25-1483 ■
+[471/1793] Extracting Matches: RE-V5RC-25-1537 ■
+[472/1793] Extracting Matches: RE-V5RC-25-1653 
+⚠️ Rate limited! Sleeping 5s...
+■
+[473/1793] Extracting Matches: RE-V5RC-25-1777 ■
+[474/1793] Extracting Matches: RE-V5RC-25-1810 ■
+[475/1793] Extracting Matches: RE-V5RC-25-1904 ■
+[476/1793] Extracting Matches: RE-V5RC-25-1919 ■
+[477/1793] Extracting Matches: RE-V5RC-25-1920 
+⚠️ Rate limited! Sleeping 5s...
+■
+[478/1793] Extracting Matches: RE-V5RC-25-1938 ■
+[479/1793] Extracting Matches: RE-V5RC-25-1978 ■
+[480/1793] Extracting Matches: RE-V5RC-25-1982 ■
+[481/1793] Extracting Matches: RE-V5RC-25-1984 ■
+[482/1793] Extracting Matches: RE-V5RC-25-2224 
+⚠️ Rate limited! Sleeping 5s...
+■
+[483/1793] Extracting Matches: RE-V5RC-25-2246 ■
+[484/1793] Extracting Matches: RE-V5RC-25-2375 ■
+[485/1793] Extracting Matches: RE-V5RC-25-2382 ■
+[486/1793] Extracting Matches: RE-V5RC-25-2405 
+⚠️ Rate limited! Sleeping 5s...
+■
+[487/1793] Extracting Matches: RE-V5RC-25-2434 ■
+[488/1793] Extracting Matches: RE-V5RC-25-2518 ■
+[489/1793] Extracting Matches: RE-V5RC-25-2692 ■
+[490/1793] Extracting Matches: RE-V5RC-25-3048 ■
+[491/1793] Extracting Matches: RE-V5RC-25-0408 ■
+[492/1793] Extracting Matches: RE-V5RC-25-0680 ■
+[493/1793] Extracting Matches: RE-V5RC-25-1249 ■
+[494/1793] Extracting Matches: RE-V5RC-25-1336 ■
+[495/1793] Extracting Matches: RE-V5RC-25-1647 ■
+[496/1793] Extracting Matches: RE-V5RC-25-2056 ■
+[497/1793] Extracting Matches: RE-V5RC-25-2142 
+⚠️ Rate limited! Sleeping 5s...
+■
+[498/1793] Extracting Matches: RE-V5RC-25-2323 ■
+[499/1793] Extracting Matches: RE-V5RC-25-1642 ■
+[500/1793] Extracting Matches: RE-V5RC-25-1037 ■
+[501/1793] Extracting Matches: RE-V5RC-25-1286 ■
+[502/1793] Extracting Matches: RE-V5RC-25-2149 ■
+[503/1793] Extracting Matches: RE-V5RC-25-3446 ■
+[504/1793] Extracting Matches: RE-V5RC-25-1143 ■
+[505/1793] Extracting Matches: RE-V5RC-25-1207 ■
+[506/1793] Extracting Matches: RE-V5RC-25-1509 ■
+[507/1793] Extracting Matches: RE-V5RC-25-1988 ■
+[508/1793] Extracting Matches: RE-V5RC-25-2081 ■
+[509/1793] Extracting Matches: RE-V5RC-25-2668 ■
+[510/1793] Extracting Matches: RE-V5RC-25-3250 ■
+[511/1793] Extracting Matches: RE-V5RC-25-9977 ■
+[512/1793] Extracting Matches: RE-V5RC-25-0094 ■
+[513/1793] Extracting Matches: RE-V5RC-25-0205 ■
+[514/1793] Extracting Matches: RE-V5RC-25-1505 
+⚠️ Rate limited! Sleeping 5s...
+■
+[515/1793] Extracting Matches: RE-V5RC-25-1850 ■
+[516/1793] Extracting Matches: RE-V5RC-25-1969 ■
+[517/1793] Extracting Matches: RE-V5RC-25-2014 ■
+[518/1793] Extracting Matches: RE-V5RC-25-2029 ■
+[519/1793] Extracting Matches: RE-V5RC-25-2292 ■
+[520/1793] Extracting Matches: RE-V5RC-25-2957 ■
+[521/1793] Extracting Matches: RE-V5RC-25-3592 ■
+■
+
+⚠️ Rate limited! Sleeping 5s...
+■
+[522/1793] Extracting Matches: RE-V5RC-25-3593 ■
+■
+■
+[523/1793] Extracting Matches: RE-V5RC-25-3731 ■
+[524/1793] Extracting Matches: RE-V5RC-25-3747 ■
+[525/1793] Extracting Matches: RE-V5RC-25-3813 ■
+[526/1793] Extracting Matches: RE-V5RC-25-3814 
+⚠️ Rate limited! Sleeping 5s...
+■
+[527/1793] Extracting Matches: RE-V5RC-25-9942 ■
+[528/1793] Extracting Matches: RE-V5RC-25-9979 ■
+[529/1793] Extracting Matches: RE-V5RC-25-9984 ■
+[530/1793] Extracting Matches: RE-V5RC-25-9988 ■
+[531/1793] Extracting Matches: RE-V5RC-25-0024 ■
+[532/1793] Extracting Matches: RE-V5RC-25-0139 ■
+[533/1793] Extracting Matches: RE-V5RC-25-0179 ■
+[534/1793] Extracting Matches: RE-V5RC-25-0197 ■
+[535/1793] Extracting Matches: RE-V5RC-25-0250 ■
+
+   📦 Payload full. Uploading chunk...
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 1000 matches to Cloud.
+   ☁️ Upserted batch of 31 matches to Cloud.
+[536/1793] Extracting Matches: RE-V5RC-25-0260 ■
+[537/1793] Extracting Matches: RE-V5RC-25-0381 ■
+[538/1793] Extracting Matches: RE-V5RC-25-0477 ■
+[539/1793] Extracting Matches: RE-V5RC-25-0630 ■
+[540/1793] Extracting Matches: RE-V5RC-25-0670 ■
+[541/1793] Extracting Matches: RE-V5RC-25-0882 ■
+[542/1793] Extracting Matches: RE-V5RC-25-1352 ■
+[543/1793] Extracting Matches: RE-V5RC-25-1363 ■
+[544/1793] Extracting Matches: RE-V5RC-25-1373 ■
+[545/1793] Extracting Matches: RE-V5RC-25-1400 ■
+[546/1793] Extracting Matches: RE-V5RC-25-1512 ■
+[547/1793] Extracting Matches: RE-V5RC-25-1606 ■
+[548/1793] Extracting Matches: RE-V5RC-25-1628 ■
+[549/1793] Extracting Matches: RE-V5RC-25-1697 ■
+[550/1793] Extracting Matches: RE-V5RC-25-1823 ■
+[551/1793] Extracting Matches: RE-V5RC-25-1862 ■
+[552/1793] Extracting Matches: RE-V5RC-25-1906 ■
+[553/1793] Extracting Matches: RE-V5RC-25-2030 ■
+[554/1793] Extracting Matches: RE-V5RC-25-2038 ■
+[555/1793] Extracting Matches: RE-V5RC-25-2119 ■
+[556/1793] Extracting Matches: RE-V5RC-25-2122 ■
+[557/1793] Extracting Matches: RE-V5RC-25-2126 ■
+[558/1793] Extracting Matches: RE-V5RC-25-2140 
+⚠️ Rate limited! Sleeping 5s...
+■
+[559/1793] Extracting Matches: RE-V5RC-25-2143 ■
+[560/1793] Extracting Matches: RE-V5RC-25-2182 ■
+[561/1793] Extracting Matches: RE-V5RC-25-2263 ■
+[562/1793] Extracting Matches: RE-V5RC-25-2432 ■
+[563/1793] Extracting Matches: RE-V5RC-25-2509 ■
+[564/1793] Extracting Matches: RE-V5RC-25-2517 ■
+[565/1793] Extracting Matches: RE-V5RC-25-2529 ■
+[566/1793] Extracting Matches: RE-V5RC-25-2544 ■
+[567/1793] Extracting Matches: RE-V5RC-25-2549 ■
+[568/1793] Extracting Matches: RE-V5RC-25-2570 ■
+[569/1793] Extracting Matches: RE-V5RC-25-2573 ■

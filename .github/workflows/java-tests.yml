@@ -1,0 +1,27 @@
+name: Java Client Tests
+
+on:
+  push:
+    branches: [ "**" ] # Runs on all branches just like the Python one
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-java-client:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin' # The standard open-source Java distribution
+          cache: 'maven'          # This makes future test runs 5x faster!
+
+      - name: 🧪 Run JUnit Tests
+        # Assuming your pom.xml is in the root directory.
+        # If it's inside a subfolder, you'd use 'working-directory' like we did for Python.
+        run: mvn test
