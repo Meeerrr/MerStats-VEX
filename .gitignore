@@ -1,15 +1,39 @@
-# --- Security / Secrets ---
-.env
-*.env
+# ========================
+# Python & Testing Caches
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
 
-# --- Build targets ---
+# ========================
+# Java & Maven Caches
+# ========================
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
+*.class
+*.jar
+*.war
+*.ear
 
-### IntelliJ IDEA ###
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.local
+
+# ========================
+# IDE & System Caches
+# ========================
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -18,27 +42,15 @@ target/
 *.iml
 *.ipr
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# ========================
+# Local Scripts & Logs
+# ========================
+*.bat
+*_log.txt
+*.log
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.local
