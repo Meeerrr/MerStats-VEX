@@ -59,3 +59,4 @@ Thumbs.db
 # ========================
 .env
 .env.local
+engine_log.txt
