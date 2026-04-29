@@ -90,8 +90,10 @@ public class MainController {
 
         setupSearchHistoryPopup();
         searchButton.setOnAction(event -> handleSearch());
+        teamInput.setOnAction(event -> handleSearch());
         btnLoadLeaderboard.setOnAction(event -> loadLeaderboardData());
         eventSearchButton.setOnAction(event -> handleEventSearch());
+        eventInput.setOnAction(event -> handleEventSearch());
 
         btnHowItWorks.setOnAction(event -> showEloExplanation());
         btnCloseOverlay.setOnAction(event -> hideEloExplanation());
@@ -202,6 +204,8 @@ public class MainController {
                 return ranking.getTeamDisplay().toLowerCase().contains(newValue.toLowerCase());
             });
         });
+
+        lbSearchInput.setOnAction(event -> loadLeaderboardData());
 
         SortedList<SeasonRanking> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(leaderboardTable.comparatorProperty());
