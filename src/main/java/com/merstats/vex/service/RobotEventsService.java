@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.merstats.vex.model.*;
 
+import io.github.cdimascio.dotenv.Dotenv; // Added Dotenv import
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -16,14 +18,31 @@ import java.net.http.*;
 import java.util.*;
 
 public class RobotEventsService {
-    // ==========================================
-    // ⚠️ INSERT YOUR API KEYS HERE
-    // ==========================================
-    private static final String RE_API_KEY = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiNTE0MjRkZDAyMDQ1MzA1MGVlZGYzZjM2OGY4ODQ3NDFhZGMwOTZjMjExMTA1OWRiYWE0MDFiMDJjY2VhZGE1ZGE0OTc4ZmY1ZDhlYjNkNzciLCJpYXQiOjE3NzUxNDUzMzAuNTI1OTI5LCJuYmYiOjE3NzUxNDUzMzAuNTI1OTMwOSwiZXhwIjoyNzIxOTE2NTMwLjUyMDU3NzksInN1YiI6IjEyNjM3MyIsInNjb3BlcyI6W119.hZuGrp7w4nO6m8NOgm3iKsFZ5l85PV8W5yhP9mgnpgXuJCL71Tg9IWR4xTIdD1uVVEKAZGPhuwRybTGHO2jp171zVZFU-U4K7w0m_wj1xzqu8-yIHW6uzhxypMAF6Nixc__vT0gKcEuLZE_WECxRjd3PQTtZ7uOT8bu81bXpCWSSd-GtItSaGpZ10CeQ42VV0aFzNm2uMePINW2N-gMJxjbrKEIqcloNw8R8K_xdrpL8O8VwQJoQFPMmq24fLSmcsWX8l4aoDqwHWsKx19JNj80h6lwge5WdGcWxmYU1b1crESb8Od69GV78QwnM0QqgIu7KRbSqiBeOVE4GyxxIVflnQPoiRSRKz1k5I1dLEzoBwavG-LX2QZjtZZTL5gFLOc_rqJLb6Y4rANZvJBpRfFUJ0MNRn0Ert7Up5ahDZqkU3_67_CQAomZITP8MVK7O__btFScefR4m9mffete2ad2MSbY3PiN9sFFp3dFhYGnC9MJKCvYn-6jzll-4oJpzj41QvKLe8Dwpkqz3DxRV8v9dgQcgifcEUi8yix1V8_YtX-VlPiH3TKdDm6gMMQewxK-25KiajV7wSm2ZLfj_KW2CLc5qyr09egDWdhAJhn_hrkKqlaCjP6CFM998HIIkwPzW81bh3SmqRgzvobg7fgpRrA2CuvU96ZIWDplS8Mg";
-    private static final String BASE_URL = "https://events.vex.com/es/api/v2";
 
-    private static final String SUPABASE_URL = "https://hzgvkmlonbffeuelojxv.supabase.co";
-    private static final String SUPABASE_ANON_KEY = "sb_publishable_aEbWOGCjVYkkiG2LS_Zczg_mYlnRsz1";
+    // ==========================================
+    // 🔒 ENVIRONMENT VARIABLES
+    // ==========================================
+    // ignoreIfMissing() ensures that if the app is packaged and run in a CI/CD pipeline
+    // or production where .env files aren't used, it will fall back to System variables.
+    private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+    // Dynamically pull from .env and format correctly
+    private static final String RE_API_KEY = "Bearer " + dotenv.get("ROBOT_EVENTS_KEY");
+    private static final String SUPABASE_URL = dotenv.get("SUPABASE_URL");
+    private static final String SUPABASE_KEY = dotenv.get("SUPABASE_KEY");
+
+    private static final String BASE_URL = "https://events.vex.com/api/v2";
+
+    static {
+        System.out.println("\n==============================================");
+        System.out.println(" 🔧 MERSTATS DIAGNOSTIC: ENVIRONMENT VARIABLES");
+        System.out.println("==============================================");
+        System.out.println(" -> Supabase URL Loaded: " + (SUPABASE_URL != null ? SUPABASE_URL : "❌ NULL (Check .env location)"));
+        System.out.println(" -> Supabase Key Loaded: " + (SUPABASE_KEY != null ? "✅ YES (Hidden for security)" : "❌ NULL"));
+        System.out.println(" -> RobotEvents Key Loaded: " + (dotenv.get("ROBOT_EVENTS_KEY") != null ? "✅ YES (Hidden for security)" : "❌ NULL"));
+        System.out.println(" -> Formatted RE_API_KEY starts with 'Bearer ': " + (RE_API_KEY.startsWith("Bearer null") ? "❌ NO (It says Bearer null)" : "✅ YES"));
+        System.out.println("==============================================\n");
+    }
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
@@ -40,6 +59,14 @@ public class RobotEventsService {
                 .GET().build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        // 🚨 INJECT THIS LOGGING BLOCK 🚨
+        System.out.println("\n--- API NETWORK REQUEST ---");
+        System.out.println("Target URL: " + req.uri());
+        System.out.println("Status Code: " + res.statusCode());
+        System.out.println("Raw Body: " + res.body());
+        System.out.println("---------------------------\n");
+
         if (res.statusCode() == 200) {
             List<VexTeam> teams = mapper.readValue(res.body(), TeamResponse.class).getData();
             if (teams != null && !teams.isEmpty()) return teams.get(0);
@@ -51,6 +78,7 @@ public class RobotEventsService {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/teams/" + teamId + "/skills?per_page=250"))
                 .header("Authorization", RE_API_KEY)
+                .header("Accept", "application/json")
                 .GET().build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -64,8 +92,9 @@ public class RobotEventsService {
         String url = SUPABASE_URL + "/rest/v1/global_truerank?select=elo_score&team_id=eq." + teamNumber + "&season_id=eq." + seasonId;
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("apikey", SUPABASE_ANON_KEY)
-                .header("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + SUPABASE_KEY)
+                .header("Accept", "application/json")
                 .GET().build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -84,8 +113,9 @@ public class RobotEventsService {
         String url = SUPABASE_URL + "/rest/v1/global_truerank?select=team_id,elo_score,opr,wins,losses,ties,teams(team_name)&season_id=eq." + seasonId + "&order=elo_score.desc";
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("apikey", SUPABASE_ANON_KEY)
-                .header("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + SUPABASE_KEY)
+                .header("Accept", "application/json")
                 .GET().build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -116,7 +146,13 @@ public class RobotEventsService {
 
     public List<SeasonRanking> getEventTrueRank(String sku) throws Exception {
         String eventUrl = BASE_URL + "/events?sku[]=" + sku;
-        HttpRequest evReq = HttpRequest.newBuilder().uri(URI.create(eventUrl)).header("Authorization", RE_API_KEY).GET().build();
+
+        HttpRequest evReq = HttpRequest.newBuilder()
+                .uri(URI.create(eventUrl))
+                .header("Authorization", RE_API_KEY)
+                .header("Accept", "application/json")
+                .GET().build();
+
         JsonNode evData = mapper.readTree(client.send(evReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
         if (evData.isEmpty()) return null;
 
@@ -126,7 +162,12 @@ public class RobotEventsService {
         for (JsonNode div : evData.get(0).path("divisions")) {
             int divId = div.path("id").asInt();
 
-            HttpRequest rankReq = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/rankings?per_page=250")).header("Authorization", RE_API_KEY).GET().build();
+            HttpRequest rankReq = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/rankings?per_page=250"))
+                    .header("Authorization", RE_API_KEY)
+                    .header("Accept", "application/json")
+                    .GET().build();
+
             JsonNode rankData = mapper.readTree(client.send(rankReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
 
             Map<String, SeasonRanking> teamMap = new HashMap<>();
@@ -143,7 +184,12 @@ public class RobotEventsService {
                 teamMap.put(team.getTeamNumber(), team);
             }
 
-            HttpRequest matchReq = HttpRequest.newBuilder().uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/matches?per_page=250")).header("Authorization", RE_API_KEY).GET().build();
+            HttpRequest matchReq = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/events/" + eventId + "/divisions/" + divId + "/matches?per_page=250"))
+                    .header("Authorization", RE_API_KEY)
+                    .header("Accept", "application/json")
+                    .GET().build();
+
             JsonNode matchData = mapper.readTree(client.send(matchReq, HttpResponse.BodyHandlers.ofString()).body()).path("data");
 
             // 2-Pass Local Simulation
@@ -164,7 +210,7 @@ public class RobotEventsService {
 
                     double actR = rs > bs ? 1.0 : (rs == bs ? 0.5 : 0.0);
 
-                    // 🔥 SURGICAL NERF 1: Hyper-compressed MOV. Maxes out around 1.3x for insane blowouts.
+                    // SURGICAL NERF 1: Hyper-compressed MOV. Maxes out around 1.3x for insane blowouts.
                     double mov = 1.0 + (Math.log10(1.0 + Math.abs(rs - bs)) * 0.15);
 
                     processAllianceElo(redAll, blueAll, teamMap, actR, 1.0 - actR, mov);
@@ -189,8 +235,7 @@ public class RobotEventsService {
             double stdElo = Math.max(Math.sqrt(varElo / teamMap.size()), 1.0);
             double stdOpr = Math.max(Math.sqrt(varOpr / teamMap.size()), 1.0);
 
-            // 🔥 SURGICAL NERF 2: Dynamic OPR Weighting based on Event Size
-            // 10 teams = ~78% OPR | 40 teams = ~57% OPR | 80+ teams = 30% OPR floor
+            // SURGICAL NERF 2: Dynamic OPR Weighting based on Event Size
             double oprWeight = Math.max(0.30, 0.85 - (teamMap.size() * 0.007));
             double eloWeight = 1.0 - oprWeight;
 
@@ -198,7 +243,6 @@ public class RobotEventsService {
                 double zElo = (t.getEloScore() - meanElo) / stdElo;
                 double zOpr = (t.getOpr() - meanOpr) / stdOpr;
 
-                // Blend using the dynamic ratio
                 double blendedZ = (zElo * eloWeight) + (zOpr * oprWeight);
 
                 double finalTrueRank = meanElo + (blendedZ * stdElo);
@@ -230,7 +274,7 @@ public class RobotEventsService {
 
         double expR = 1.0 / (1.0 + Math.pow(10.0, (blueAvg - redAvg) / 400.0));
 
-        // 🔥 TWEAK 4: Halved the K-Factor (16.0 instead of 32.0)
+        // TWEAK 4: Halved the K-Factor (16.0 instead of 32.0)
         double rs = 16.0 * (actR - expR) * mov;
         double bs = 16.0 * (actB - (1.0 - expR)) * mov;
 
@@ -239,20 +283,16 @@ public class RobotEventsService {
     }
 
     private void calculateEventOPR(JsonNode matchData, Map<String, SeasonRanking> teamMap) {
-        // 1. Create a definitive index for all teams in this division
         List<String> teamIndexList = new ArrayList<>(teamMap.keySet());
         int numTeams = teamIndexList.size();
         if (numTeams == 0) return;
 
-        // 2. Initialize the Linear Algebra Matrices
         RealMatrix ATA = new Array2DRowRealMatrix(numTeams, numTeams);
         RealVector ATB = new ArrayRealVector(numTeams);
 
-        // 3. Populate the Matrices based on Match Results
         for (JsonNode match : matchData) {
             if (match.path("alliances").size() < 2) continue;
 
-            // Ensure matches with 0-0 score (unplayed) are skipped for OPR
             int rsTest = match.path("alliances").get(0).path("score").asInt(0);
             int bsTest = match.path("alliances").get(1).path("score").asInt(0);
             if (rsTest == 0 && bsTest == 0) continue;
@@ -262,7 +302,6 @@ public class RobotEventsService {
                 int score = alliance.path("score").asInt(0);
                 JsonNode teams = alliance.path("teams");
 
-                // Find the matrix indices for the teams in this alliance
                 List<Integer> indices = new ArrayList<>();
                 for (JsonNode t : teams) {
                     String teamNum = t.path("team").path("name").asText();
@@ -270,7 +309,6 @@ public class RobotEventsService {
                     if (idx != -1) indices.add(idx);
                 }
 
-                // Add to A^T * A (Matches played together) and A^T * B (Total Scores)
                 for (int row : indices) {
                     ATB.setEntry(row, ATB.getEntry(row) + score);
                     for (int col : indices) {
@@ -280,12 +318,10 @@ public class RobotEventsService {
             }
         }
 
-        // solve the matrix
         try {
             DecompositionSolver solver = new SingularValueDecomposition(ATA).getSolver();
             RealVector oprVector = solver.solve(ATB);
 
-            // 5. Save the calculated OPR back to our Java Objects
             for (int i = 0; i < numTeams; i++) {
                 String teamNum = teamIndexList.get(i);
                 teamMap.get(teamNum).setOpr(oprVector.getEntry(i));
