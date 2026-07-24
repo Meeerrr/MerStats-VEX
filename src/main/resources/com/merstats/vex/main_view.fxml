@@ -32,10 +32,10 @@
 
             <VBox fx:id="contentCard" alignment="CENTER" spacing="25.0" styleClass="content-card">
                 <padding><Insets bottom="60.0" left="60.0" right="60.0" top="60.0" /></padding>
-                <ImageView fx:id="mainLogo" fitHeight="120.0" fitWidth="120.0" preserveRatio="true"><image><Image url="@logo.png" /></image><VBox.margin><Insets bottom="10.0"/></VBox.margin></ImageView>
+                <ImageView fx:id="mainLogo" fitHeight="120.0" fitWidth="120.0" preserveRatio="true"><image><Image url="@logo.png" /></image><VBox.margin><Insets bottom="5.0"/></VBox.margin></ImageView>
+                <ProgressBar fx:id="loadingBar" prefWidth="180.0" progress="-1.0" visible="false" styleClass="loading-bar"><VBox.margin><Insets bottom="10.0"/></VBox.margin></ProgressBar>
                 <VBox alignment="CENTER" spacing="5.0"><Label fx:id="dashboardTitle" text="Ready to Query" styleClass="hero-header" /><Label fx:id="dashboardSubtitle" text="Enter a unique Team ID to retrieve real-time telemetry." styleClass="hero-subtitle" wrapText="true" /></VBox>
                 <HBox alignment="CENTER_LEFT" styleClass="center-search-wrapper" maxWidth="550.0"><VBox.margin><Insets top="20.0" bottom="10.0"/></VBox.margin><TextField fx:id="teamInput" HBox.hgrow="ALWAYS" promptText="Search Team ID... (e.g., 11017Y)" styleClass="center-search-input" /><Button fx:id="searchButton" minWidth="110.0" styleClass="center-search-button" text="Search" /></HBox>
-                <ProgressBar fx:id="loadingBar" prefWidth="550.0" progress="-1.0" visible="false" styleClass="loading-bar"><VBox.margin><Insets top="5.0" bottom="-10.0"/></VBox.margin></ProgressBar>
                 <TableView fx:id="skillsTable" prefHeight="300.0" prefWidth="800.0">
                     <columns>
                         <TableColumn fx:id="seasonCol" prefWidth="150.0" text="Season" style="-fx-alignment: CENTER-LEFT; -fx-padding: 0 0 0 10;" />

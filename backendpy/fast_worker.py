@@ -41,7 +41,7 @@ def fetch_db_matches(season_id):
     """Pulls matches from Supabase using strict URL pagination to prevent timeouts"""
     matches = []
     offset = 0
-    limit = 1000
+    limit = 500
 
     print(f"📡 Pulling Season {season_id} matches from Data Lake...", end=" ", flush=True)
 

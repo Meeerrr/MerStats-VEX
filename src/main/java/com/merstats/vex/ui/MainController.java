@@ -57,7 +57,6 @@ public class MainController {
     private Label dashboardPlaceholder, leaderboardPlaceholder;
     private final RobotEventsService apiService = new RobotEventsService();
     private final List<String> recentSearches = new ArrayList<>();
-    private RotateTransition logoRotation;
     private final ObservableList<SeasonRanking> masterLeaderboardData = FXCollections.observableArrayList();
     private final java.util.Map<String, Integer> seasonMap = new java.util.LinkedHashMap<>();
     private boolean isDarkMode = false;
@@ -402,10 +401,6 @@ public class MainController {
         dashboardPlaceholder.setText("Fetching telemetry for " + teamNumber + "...");
         loadingBar.setVisible(true);
 
-        if (logoRotation == null) logoRotation = createLogoAnimation();
-        logoRotation.play();
-        contentCard.getStyleClass().add("logo-active-pulse");
-
         CompletableFuture.supplyAsync(() -> {
             try {
                 VexTeam team = apiService.getTeamByNumber(teamNumber);
@@ -486,8 +481,6 @@ public class MainController {
 
     private void resetSearchUI() {
         loadingBar.setVisible(false);
-        if (logoRotation != null) { logoRotation.stop(); mainLogo.setRotate(0); }
-        contentCard.getStyleClass().remove("logo-active-pulse");
         searchButton.setDisable(false); searchButton.setText("Search");
     }
 
@@ -511,11 +504,5 @@ public class MainController {
     private void hideEloExplanation() {
         FadeTransition fade = new FadeTransition(Duration.millis(300), eloOverlay); fade.setToValue(0.0);
         fade.setOnFinished(e -> { eloOverlay.setVisible(false); eloOverlay.setManaged(false); }); fade.play();
-    }
-
-    private RotateTransition createLogoAnimation() {
-        RotateTransition rt = new RotateTransition(Duration.millis(800), mainLogo);
-        rt.setByAngle(360); rt.setCycleCount(Animation.INDEFINITE); rt.setInterpolator(Interpolator.LINEAR);
-        return rt;
     }
 }
